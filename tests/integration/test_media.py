@@ -341,3 +341,83 @@ class TestAutoEditor:
 
         edl = plan_edit(30.0, transcript=None, preset="clean")
         assert build_zoom_filter(edl, width=270, height=480, fps=30) is None
+
+
+class TestGraficos:
+    """O libass descarta linha malformada em silêncio.
+
+    Conferir a string gerada não prova nada: um `\\bord` virado em backspace, uma
+    cor no formato errado ou um desenho fora do quadro produzem exatamente o
+    mesmo arquivo válido e exatamente nenhum pixel. Estes testes renderizam e
+    olham o resultado.
+    """
+
+    @staticmethod
+    def _pixels(video, tempo: float, largura: int, altura: int, x=0, y=0):
+        """Lê uma faixa de pixels crus de um instante do vídeo."""
+        import subprocess
+
+        proc = subprocess.run(
+            [
+                ffmpeg.ffmpeg_binary(), "-v", "error",
+                "-ss", str(tempo), "-i", str(video),
+                "-vf", f"crop={largura}:{altura}:{x}:{y}",
+                "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
+            ],
+            capture_output=True,
+            check=True,
+        )
+        dados = proc.stdout
+        return [
+            (dados[i], dados[i + 1], dados[i + 2]) for i in range(0, len(dados), 3)
+        ]
+
+    @pytest.fixture
+    def com_graficos(self, tmp_path):
+        from pathlib import Path
+
+        from services.video.graphics import plan_overlays, write_graphics
+
+        plano = plan_overlays(8.0, hook="Isto muda tudo", cta="Segue lá")
+        ass = write_graphics(
+            plano, tmp_path / "graphics.ass", width=540, height=960,
+            preset_key="hormozi",
+        )
+        assert ass is not None
+
+        saida = tmp_path / "com.mp4"
+        ffmpeg.run_ffmpeg(
+            [
+                "-f", "lavfi",
+                "-i", "color=c=black:size=540x960:rate=30:duration=8",
+                "-vf", ffmpeg.subtitles_filter(ass),
+                "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+                str(saida),
+            ]
+        )
+        return saida
+
+    def test_a_barra_de_progresso_desenha_de_verdade(self, com_graficos) -> None:
+        """Fundo preto: qualquer pixel claro no topo só pode ser a barra."""
+        faixa = self._pixels(com_graficos, 4.0, largura=8, altura=4, x=8, y=1)
+        assert any(sum(p) > 150 for p in faixa), "a barra não pintou nada"
+
+    def test_a_barra_enche_com_o_tempo(self, com_graficos) -> None:
+        direita_cedo = self._pixels(com_graficos, 0.5, 8, 4, x=500, y=1)
+        direita_tarde = self._pixels(com_graficos, 7.5, 8, 4, x=500, y=1)
+        assert max(sum(p) for p in direita_cedo) < max(
+            sum(p) for p in direita_tarde
+        ), "a ponta direita não escureceu no começo nem acendeu no fim"
+
+    def test_o_hook_desenha_no_comeco_e_some_depois(self, com_graficos) -> None:
+        altura_hook = int(960 * 0.30)
+        durante = self._pixels(com_graficos, 0.9, 540, 60, x=0, y=altura_hook - 30)
+        depois = self._pixels(com_graficos, 6.0, 540, 60, x=0, y=altura_hook - 30)
+        assert max(sum(p) for p in durante) > 300, "o card de hook não apareceu"
+        assert max(sum(p) for p in depois) < 100, "o hook não saiu de cena"
+
+    def test_texto_nao_vaza_do_quadro(self, com_graficos) -> None:
+        """`WrapStyle: 2` não quebra sozinho: conta errada corta a letra na borda."""
+        for x in (0, 536):
+            borda = self._pixels(com_graficos, 0.9, 4, 300, x=x, y=int(960 * 0.20))
+            assert all(sum(p) < 120 for p in borda), "há tinta encostando na borda"

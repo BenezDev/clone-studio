@@ -56,6 +56,7 @@ class EditingUpdate(BaseModel):
 
     preset: Literal["clean", "sutil", "dinamico"] | None = None
     auto_cut: bool | None = None
+    graphics: bool | None = None
 
 
 class RenderUpdate(BaseModel):

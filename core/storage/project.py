@@ -69,6 +69,7 @@ class CaptionSettings:
 class EditSettings:
     preset: str = "clean"
     auto_cut: bool = False
+    graphics: bool = False
 
 
 @dataclass
@@ -142,6 +143,10 @@ class Project:
     @property
     def edit_file(self) -> Path:
         return self.directory / "edit.json"
+
+    @property
+    def graphics_ass(self) -> Path:
+        return self.directory / "graphics.ass"
 
     @property
     def renders_dir(self) -> Path:

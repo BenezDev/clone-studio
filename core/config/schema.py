@@ -205,6 +205,11 @@ class EditingConfig(BaseModel):
     min_shot_seconds: float = 2.0
     max_shot_seconds: float = 8.0
     punch_in_strength: float = 1.08
+    # Animações gráficas (hook, lower third, barra de progresso, end card).
+    graphics: bool = False
+    # Aparece no lower third. Vazio = sem lower third; card com texto genérico
+    # é pior que card nenhum.
+    handle: str = Field(default="", max_length=60)
 
 
 class GenerativeBrollConfig(BaseModel):

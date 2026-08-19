@@ -491,6 +491,15 @@ def _escape_subtitle_path(path: Path | str) -> str:
     return posix_path.replace(":", r"\:").replace("'", r"\'")
 
 
+def subtitles_filter(path: Path | str) -> str:
+    """Filtro `subtitles` com o caminho escapado.
+
+    Existe para quem precisa queimar um segundo ASS na cadeia (os gráficos do
+    auto editor) sem alcançar dentro do módulo pelo escape privado.
+    """
+    return f"subtitles='{_escape_subtitle_path(path)}'"
+
+
 def render_final(
     video_source: Path,
     audio_source: Path | None,

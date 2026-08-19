@@ -490,6 +490,53 @@ def stage_captions(ctx: PipelineContext) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _plan_graphics(ctx: PipelineContext) -> None:
+    """Planeja os overlays e grava `graphics.ass`.
+
+    Separado do enquadramento porque são interruptores independentes: dá para
+    querer barra de progresso sem punch-in, e vice-versa.
+
+    Os textos vêm do roteiro — hook e CTA que o autor escreveu. Inventar texto
+    para preencher um card seria pior que não ter card.
+    """
+    from services.video.graphics import plan_overlays, write_graphics
+
+    project = ctx.project
+    if not project.editing.graphics:
+        return
+
+    video = ctx.require("lipsync_video")
+    duracao = ffmpeg.probe(video).duration
+
+    roteiro: dict[str, Any] = {}
+    if project.script_file.exists():
+        import json
+
+        try:
+            roteiro = json.loads(project.script_file.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            roteiro = {}
+
+    plano = plan_overlays(
+        duracao,
+        hook=str(roteiro.get("hook", "")),
+        cta=str(roteiro.get("cta", "")),
+        handle=ctx.settings.editing.handle,
+    )
+    caminho = write_graphics(
+        plano,
+        project.graphics_ass,
+        width=project.render.width,
+        height=project.render.height,
+        preset_key=project.captions.preset,
+    )
+    ctx.set("graphics_ass", caminho)
+    for aviso in plano.warnings:
+        ctx.emit(0.5, aviso)
+    if caminho:
+        ctx.emit(0.6, f"{len(plano.overlays)} gráfico(s) planejado(s).")
+
+
 def stage_edit(ctx: PipelineContext) -> None:
     """Planeja os enquadramentos e grava a EDL.
 
@@ -504,8 +551,11 @@ def stage_edit(ctx: PipelineContext) -> None:
     project = ctx.project
     from services.video.editor import plan_edit
 
+    ctx.set("edl", None)
+    ctx.set("graphics_ass", None)
+    _plan_graphics(ctx)
+
     if not project.editing.auto_cut:
-        ctx.set("edl", None)
         ctx.emit(1.0, "Auto editor desativado; enquadramento fixo.")
         return
 
@@ -625,6 +675,12 @@ def stage_render(ctx: PipelineContext) -> None:
         # sai da zona segura e fica ilegível no pico do movimento.
         if zoom:
             edit_filters = [zoom]
+
+    # Os gráficos vêm depois do zoom, pelo mesmo motivo, e antes das legendas,
+    # que ficam por cima de tudo.
+    graphics = ctx.get("graphics_ass")
+    if graphics is not None and Path(graphics).exists():
+        edit_filters.append(ffmpeg.subtitles_filter(graphics))
 
     ctx.emit(0.2, f"Renderizando {suffix}…")
     try:

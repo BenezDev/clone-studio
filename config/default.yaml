@@ -130,6 +130,11 @@ editing:
   max_shot_seconds: 8.0
   # Quanto o quadro fecha no punch-in. 1.0 = sem zoom.
   punch_in_strength: 1.08
+  # Animações gráficas queimadas no vídeo: card de hook, lower third, barra de
+  # progresso e end card. Desenhadas em ASS pelo libass, sem dependência nova.
+  graphics: false
+  # Seu @ no lower third. Vazio = sem lower third.
+  handle: ""
 
 broll:
   enabled: true

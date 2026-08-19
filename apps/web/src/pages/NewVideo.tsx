@@ -620,6 +620,25 @@ export default function NewVideo() {
             </select>
           </Field>
 
+          <label className="checkbox" style={{ marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={project.editing.graphics}
+              onChange={(e) =>
+                updateProject({ editing: { graphics: e.target.checked } })
+              }
+            />
+            animações gráficas — card de hook, barra de progresso e end card
+          </label>
+
+          <div className="hint" style={{ marginBottom: 14 }}>
+            Os textos vêm do roteiro: o hook e o CTA que você escreveu. Sem eles,
+            só a barra de progresso aparece — card com texto genérico é pior que
+            card nenhum. Seu @ do lower third fica em{" "}
+            <span className="mono">config/local.yaml</span>, chave{" "}
+            <span className="mono">editing.handle</span>.
+          </div>
+
           <Alert level="info" title="Não corta tempo, corta enquadramento">
             O vídeo está lip-sincronizado quadro a quadro com a voz. Remover
             trechos dessincronizaria a boca da fala, então o auto editor muda o

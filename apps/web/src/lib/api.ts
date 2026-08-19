@@ -191,7 +191,7 @@ export interface Project {
   voice: { profile_id: string; emotion: string; speed: number; seed: number | null };
   template: { mode: string; template_id: string | null; plan: Record<string, unknown> };
   captions: { preset: string; uppercase: boolean | null; enabled: boolean };
-  editing: { preset: string; auto_cut: boolean };
+  editing: { preset: string; auto_cut: boolean; graphics: boolean };
   render: { width: number; height: number; fps: number };
   engines: Record<string, string>;
   stages: Record<string, { status: string; output: string; duration_seconds: number }>;

@@ -27,7 +27,7 @@ Nenhum rosto, voz, vídeo ou roteiro é enviado para qualquer serviço externo.
 | 7 | Interface React | **pronto** |
 | 8 | Ollama — roteiros | **pronto** |
 | 9 | Auto editor (EDL, cortes de enquadramento, zooms) | **pronto** |
-| 10 | Remotion — animações gráficas | pendente |
+| 10 | Animações gráficas (hook, lower third, progresso, end card) | **pronto** |
 | 11 | ComfyUI / Wan2.2 — B-roll generativo | adapter pronto, opt-in |
 | 12 | Polimento e performance | em andamento |
 
@@ -227,6 +227,17 @@ só. A duração fica intacta e a sincronia não é tocada.
 O plano sai como dado, em `edit.json`: cada enquadramento com início, fim, zoom
 e o motivo do corte. Dá para ler e comparar entre execuções antes de renderizar.
 As legendas ficam fixas no quadro — só a imagem se move.
+
+### Animações gráficas
+
+Card de hook, lower third, barra de progresso e end card, queimados no vídeo.
+Escritos em **ASS** e desenhados pelo libass, que o projeto já usa para as
+legendas: formas vetoriais, transformações animadas, movimento, fades e
+recortes — sem nenhuma dependência nova, sem Chromium e sem licença de
+terceiro viajando junto com o software.
+
+Os textos vêm do roteiro. Sem hook e sem CTA escritos, só a barra de progresso
+aparece: card com texto genérico é pior que card nenhum.
 
 ### Resume
 

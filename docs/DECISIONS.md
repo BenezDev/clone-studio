@@ -416,3 +416,55 @@ a imagem sai da zona segura e fica ilegível no pico do movimento.
 - *Presets `podcast`, `viral` e `cinematic`*, que o endpoint de presets já
   anunciava sem nada por trás. Ficaram três que descrevem o que existe:
   `clean`, `sutil` e `dinamico`.
+
+---
+
+## D-023 · Animações gráficas em ASS, não em Remotion (2026-08-19)
+
+**Contexto.** A fase 10 estava escrita como "Remotion — animações gráficas". O
+Remotion é a ferramenta anotada no README, não o objetivo.
+
+**O problema de licença.** Remotion é gratuito para indivíduos e empresas de até
+três pessoas; a partir de quatro exige Company License paga, e há cláusula de
+agregação somando funcionários de todas as partes numa colaboração. A FAQ diz
+que *"a responsabilidade de comprar a licença recai sobre a entidade que em
+última instância detém a IP do projeto Remotion"* — num software feito para ser
+vendido, isso significa que o **comprador** herda a obrigação. Este projeto
+recusa recomendar o MuseTalk em modo comercial por causa das dependências do
+DWPose; embutir o Remotion em silêncio seria incoerente com a própria regra.
+
+**Decisão.** ASS, desenhado pelo libass — que o projeto **já** usa para as
+legendas. O formato suporta formas vetoriais (`\p1`), transformações animadas
+(`\t`), movimento (`\move`), fades e recortes: suficiente para card de hook,
+lower third, barra de progresso e end card. Zero dependência nova, zero
+Chromium (~400 MB), custo de render irrelevante numa máquina sem GPU, e nenhuma
+licença viajando com o produto.
+
+**Custo aceito.** Design complexo em React fica fora do alcance. Para vídeo
+vertical curto com elementos templatizados, não faz falta.
+
+**Os textos vêm do roteiro.** Hook e CTA que o autor escreveu. Sem eles, só a
+barra de progresso aparece — card com texto genérico é pior que card nenhum.
+
+**Três armadilhas, todas encontradas renderizando.**
+
+1. **O libass descarta linha malformada em silêncio.** Nenhum erro, nenhum
+   aviso, só um gráfico que não aparece. Por isso os testes de integração
+   renderizam sobre fundo preto e conferem **pixel**: string bem formada e
+   arquivo válido provam nada.
+2. **Python come as tags.** `\a` é BEL, `\b` é backspace, `\f` é formfeed —
+   sem raw string, `\an5`, `\bord` e `\fscx` viram bytes de controle. Um teste
+   varre a saída atrás de caractere de controle.
+3. **`\c` e a cor de estilo são formatos diferentes.** O estilo usa
+   `&HAABBGGRR`, a tag usa `&HBBGGRR&`. O libass lê o número e mascara, então
+   passar os oito dígitos funciona *enquanto o alfa for `00`* e erra a cor
+   depois — um bug que aparece longe da causa.
+
+**Duas correções de dimensionamento.** A quebra de linha era um número fixo de
+caracteres: estourava o quadro no preset de fonte grande, porque `WrapStyle: 2`
+desliga a quebra automática do libass. Agora sai da fonte e da largura reais. E
+escapar **depois** de quebrar transformava o próprio `\N` em texto visível no
+meio da frase — a ordem é escapar, depois quebrar.
+
+**Teto de duração.** Hook e end card ficam limitados a 40% do vídeo. Sem isso,
+num clipe curto o end card cobria o clipe inteiro em vez de fechar.

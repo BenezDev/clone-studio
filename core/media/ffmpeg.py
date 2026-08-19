@@ -564,13 +564,20 @@ def render_preview(
     config: PreviewConfig,
     *,
     subtitles: Path | None = None,
+    extra_filters: Sequence[str] = (),
 ) -> Path:
-    """Preview rápido e barato — para descobrir erros antes do render final."""
+    """Preview rápido e barato — para descobrir erros antes do render final.
+
+    Aceita os mesmos filtros extras do render final de propósito: um preview que
+    não mostra o auto editor mente sobre o resultado, e o preview existe
+    justamente para não descobrir o problema vinte minutos depois.
+    """
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     filters = [
         build_vertical_filter(0, 0, config.width, config.height),
     ]
+    filters.extend(extra_filters)
     if subtitles is not None:
         filters.append(f"subtitles='{_escape_subtitle_path(subtitles)}'")
 

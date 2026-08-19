@@ -10,6 +10,7 @@ from core.config.loader import active_profile, load_settings, save_user_override
 from core.storage.cache import get_cache
 from core.storage.paths import get_paths
 from services.video.captions import PRESETS as CAPTION_PRESETS
+from services.video.editor import EDIT_PRESETS
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -66,7 +67,12 @@ def get_presets() -> dict[str, Any]:
             }
             for preset in CAPTION_PRESETS.values()
         ],
-        "editing": ["clean", "fast", "podcast", "viral", "cinematic"],
+        # A lista vem do módulo, não de uma constante escrita à mão: antes ela
+        # anunciava "podcast", "viral" e "cinematic", que nunca existiram.
+        "editing": [
+            {"key": key, "label": value["label"]}
+            for key, value in EDIT_PRESETS.items()
+        ],
         "script": [
             {"key": key, "label": value["label"]}
             for key, value in SCRIPT_PRESETS.items()

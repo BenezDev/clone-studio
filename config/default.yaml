@@ -118,11 +118,17 @@ preview:
   max_seconds: 10
 
 editing:
+  # clean = sem movimento · sutil = fecha a cada frase · dinamico = frases e ênfases
   preset: clean
-  # Reservado para a FASE 9; não afeta o render atual.
+  # Liga o auto editor. Ele não corta tempo — o vídeo está lip-sincronizado com
+  # o áudio e remover quadros dessincronizaria a boca. O que ele corta é
+  # enquadramento: fecha no rosto na frase que importa e abre quando ela acaba.
   auto_cut: false
+  # Distância mínima entre dois cortes. Abaixo disso vira tremor.
   min_shot_seconds: 2.0
+  # Acima disso o enquadramento parado cansa e ganha um corte de respiro.
   max_shot_seconds: 8.0
+  # Quanto o quadro fecha no punch-in. 1.0 = sem zoom.
   punch_in_strength: 1.08
 
 broll:

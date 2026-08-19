@@ -356,3 +356,63 @@ pipe, para o teste rodar contra o arquivo real e não contra um bem formado.
 **Fecha o dispositivo.** A câmera e o microfone só abrem no clique e são
 fechados ao sair da tela ou ao terminar o cadastro. Um app local-first não pode
 deixar a luz da câmera acesa em segundo plano.
+
+---
+
+## D-022 · O auto editor corta enquadramento, não tempo (2026-08-19)
+
+**Problema.** A fase 9 estava especificada como "auto editor (EDL, cortes,
+zooms)". Cortar, num editor comum, significa remover tempo.
+
+**Por que remover tempo é impossível aqui.** O áudio é gerado pelo TTS e o vídeo
+foi lip-sincronizado quadro a quadro contra ele. Tirar meio segundo da imagem
+dessincroniza a boca da fala, e refazer o lip-sync custa os ~20 minutos de CPU
+que a etapa inteira leva. Não existe corte de tempo que não quebre o resultado —
+a especificação pedia algo que o resto da arquitetura proíbe.
+
+**Decisão.** Corte de *enquadramento*. É o que um editor humano faz quando tem
+**uma câmera só**, que é exatamente o caso do Production Mode: fecha no rosto na
+frase que importa, abre quando ela termina. Lê como corte, preserva a duração e
+não encosta na sincronia.
+
+**A EDL é dado, não filtro.** `services/video/editor.py` planeja e grava
+`edit.json` com início, fim, zoom e motivo de cada enquadramento; o render só
+executa. Um filtro montado direto no render seria impossível de inspecionar, e
+"por que o corte caiu aqui" é a primeira pergunta de quem revisa uma edição
+automática.
+
+**Três detalhes que separam isto de edição que parece automática.**
+
+- *Distância mínima entre cortes, aplicada antes da quebra por duração.* Na
+  ordem inversa, um corte inserido por tempo seria seguido de outro por frase
+  200 ms depois — o tremor que denuncia a máquina.
+- *Zoom alternado.* Dois enquadramentos seguidos no mesmo valor não leriam como
+  corte, seriam um enquadramento longo.
+- *Âncora acima do centro.* Para manter um ponto fixo enquanto a janela encolhe
+  o deslocamento é `a * tamanho * (1 - 1/zoom)`; com `a` no centro isso reduz à
+  fórmula conhecida e puxa a imagem para o tronco, cortando a testa. Em 0.42 o
+  rosto fica no lugar.
+
+**Duas armadilhas do `zoompan`, ambas encontradas rodando, não lendo.**
+
+1. **Ele reescreve a cadência.** Sem `fps` explícito assume 25. A primeira
+   versão passava o fps do vídeo de lip-sync (25) para um render configurado a
+   30: o arquivo saiu com 122 quadros em vez de 146, sem erro e sem aviso. O fps
+   tem que vir do **destino**, e o filtro por isso é montado no render, que é
+   quem sabe se a saída é preview ou final. O teste que existia não pegava
+   porque origem e destino tinham o mesmo fps.
+2. **A expressão é somatório, não `if` aninhado.** Cada troca vira
+   `delta*clip((it-corte)/rampa, 0, 1)` e o valor num instante é a soma do que
+   já disparou. Cresce em comprimento, não em profundidade — dezenas de `if`
+   encaixados estourariam o parser. As vírgulas vão escapadas, senão separam
+   filtros e quebram a cadeia inteira.
+
+**Ordem na cadeia.** O zoom entra antes das legendas. Texto que escala junto com
+a imagem sai da zona segura e fica ilegível no pico do movimento.
+
+**Descartado.**
+- *`crop` com expressões de tempo*: a saída teria tamanho variável, o que o
+  encoder não aceita.
+- *Presets `podcast`, `viral` e `cinematic`*, que o endpoint de presets já
+  anunciava sem nada por trás. Ficaram três que descrevem o que existe:
+  `clean`, `sutil` e `dinamico`.

@@ -275,7 +275,7 @@ export const api = {
     presets: () =>
       get<{
         captions: { key: string; label: string; uppercase: boolean; words_per_cue: number }[];
-        editing: string[];
+        editing: { key: string; label: string }[];
         script: { key: string; label: string }[];
       }>("/settings/presets"),
     cache: () =>

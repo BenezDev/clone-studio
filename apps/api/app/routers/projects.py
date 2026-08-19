@@ -54,7 +54,7 @@ class CaptionUpdate(BaseModel):
 class EditingUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    preset: str | None = Field(default=None, max_length=80)
+    preset: Literal["clean", "sutil", "dinamico"] | None = None
     auto_cut: bool | None = None
 
 

@@ -2,7 +2,8 @@
 
 Fluxo do Production Mode:
 
-    roteiro -> voz clonada -> template meu -> lip-sync -> legendas -> render 9:16
+    roteiro -> voz clonada -> template meu -> lip-sync -> legendas -> edição
+    -> render 9:16
 
 Cada etapa:
   * checa cancelamento antes de começar;
@@ -83,7 +84,12 @@ def stage_prepare(ctx: PipelineContext) -> None:
 
 
 def _load_script_text(ctx: PipelineContext) -> str:
-    """Lê o texto a ser falado — do script.json ou da ideia bruta."""
+    """Lê o texto a ser falado — do script.json ou da ideia bruta.
+
+    Guarda as cenas em `script_scenes` de passagem: elas carregam as palavras
+    enfatizadas, que o auto editor usa para decidir onde fechar o quadro. O
+    autor já marcou o que importa; não faz sentido adivinhar depois.
+    """
     import json
 
     project = ctx.project
@@ -99,6 +105,7 @@ def _load_script_text(ctx: PipelineContext) -> str:
 
         scenes = raw.get("scenes") or []
         if scenes:
+            ctx.set("script_scenes", scenes)
             return " ".join(s.get("text", "").strip() for s in scenes).strip()
         if raw.get("text"):
             return str(raw["text"])
@@ -398,6 +405,17 @@ def stage_captions(ctx: PipelineContext) -> None:
     output = project.captions_ass
     if not ctx.should_run("captions") and output.exists():
         ctx.set("captions_ass", output)
+        # A transcrição também precisa voltar ao contexto: o auto editor corta
+        # nos limites de frase, e sem ela cairia no modo por tempo em toda
+        # execução que reaproveita legendas — que é o caso comum de um resume.
+        transcript_file = project.directory / "transcript.json"
+        if transcript_file.exists():
+            from services.transcription.base import Transcript
+
+            try:
+                ctx.set("transcript", Transcript.load(transcript_file))
+            except Exception:  # noqa: BLE001 - transcrição ilegível não derruba o render
+                ctx.emit(0.5, "transcript.json ilegível; o auto editor cortará por tempo.")
         ctx.emit(1.0, "Legendas reaproveitadas.")
         return
 
@@ -468,7 +486,64 @@ def stage_captions(ctx: PipelineContext) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6. Render
+# 6. Edição automática
+# ---------------------------------------------------------------------------
+
+
+def stage_edit(ctx: PipelineContext) -> None:
+    """Planeja os enquadramentos e grava a EDL.
+
+    Etapa separada do render de propósito. A EDL é o **plano** e fica em
+    `edit.json`, legível e comparável entre execuções; o render só executa. Se
+    fosse tudo no render, não daria para ver por que um corte caiu onde caiu.
+
+    Barata (não toca em vídeo), então nunca é reaproveitada por resume: o
+    roteiro ou a transcrição podem ter mudado, e replanejar custa milissegundos.
+    """
+    ctx.check_cancelled()
+    project = ctx.project
+    from services.video.editor import plan_edit
+
+    if not project.editing.auto_cut:
+        ctx.set("edl", None)
+        ctx.emit(1.0, "Auto editor desativado; enquadramento fixo.")
+        return
+
+    video = ctx.require("lipsync_video")
+    info = ffmpeg.probe(video)
+
+    # As palavras enfatizadas vêm do roteiro: são os pontos onde o autor já
+    # disse que a frase importa. Melhor sinal que qualquer heurística de áudio.
+    emphasis: list[str] = []
+    for scene in ctx.get("script_scenes", []) or []:
+        emphasis.extend(scene.get("emphasis_words", []) or [])
+
+    edl = plan_edit(
+        info.duration,
+        transcript=ctx.get("transcript"),
+        emphasis=emphasis,
+        preset=project.editing.preset,
+        min_shot_seconds=ctx.settings.editing.min_shot_seconds,
+        max_shot_seconds=ctx.settings.editing.max_shot_seconds,
+        punch_in_strength=ctx.settings.editing.punch_in_strength,
+    )
+    edl.save(project.edit_file)
+    ctx.set("edl", edl)
+    project.record_stage("edit", output=project.edit_file)
+    project.save()
+
+    for aviso in edl.warnings:
+        ctx.emit(0.9, aviso)
+    ctx.emit(
+        1.0,
+        f"{len(edl.shots)} enquadramento(s) planejado(s)."
+        if edl.has_movement
+        else "Nenhum movimento aplicável; enquadramento fixo.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# 7. Render
 # ---------------------------------------------------------------------------
 
 
@@ -525,15 +600,51 @@ def stage_render(ctx: PipelineContext) -> None:
         ctx.emit(0.1, "Normalização de loudness falhou; usando o áudio original.")
         normalized = audio
 
+    # O filtro é montado aqui, e não na etapa de edição, porque só o render
+    # sabe se a saída é preview ou final — e o `zoompan` REESCREVE a cadência.
+    # Passar o fps do lip-sync (25) num render configurado para 30 derruba o
+    # vídeo inteiro para 25 sem nenhum aviso. O preview é o contrário: não força
+    # fps nenhum, então tem que herdar o da origem.
+    edit_filters: list[str] = []
+    edl = ctx.get("edl")
+    if edl is not None:
+        from services.video.editor import build_zoom_filter
+
+        if ctx.preview:
+            origem = ffmpeg.probe(video).video
+            alvo_fps = int(round((origem.fps if origem else 0) or project.render.fps))
+            largura, altura = ctx.settings.preview.width, ctx.settings.preview.height
+        else:
+            alvo_fps = project.render.fps
+            largura, altura = project.render.width, project.render.height
+
+        zoom = build_zoom_filter(
+            edl, width=largura, height=altura, fps=alvo_fps
+        )
+        # O zoom entra ANTES das legendas: texto que escala junto com a imagem
+        # sai da zona segura e fica ilegível no pico do movimento.
+        if zoom:
+            edit_filters = [zoom]
+
     ctx.emit(0.2, f"Renderizando {suffix}…")
     try:
         if ctx.preview:
             ffmpeg.render_preview(
-                video, normalized, output, ctx.settings.preview, subtitles=captions
+                video,
+                normalized,
+                output,
+                ctx.settings.preview,
+                subtitles=captions,
+                extra_filters=edit_filters,
             )
         else:
             ffmpeg.render_final(
-                video, normalized, output, video_config, subtitles=captions
+                video,
+                normalized,
+                output,
+                video_config,
+                subtitles=captions,
+                extra_filters=edit_filters,
             )
     except ffmpeg.FFmpegError as exc:
         raise StageFailed(
@@ -599,6 +710,7 @@ PRODUCTION_STAGES: list[Stage] = [
     Stage("template", "Montando base", stage_template, weight=2.0),
     Stage("lipsync", "Sincronizando lábios", stage_lipsync, weight=12.0),
     Stage("captions", "Legendando", stage_captions, weight=3.0),
+    Stage("edit", "Editando", stage_edit, weight=0.3),
     Stage("render", "Renderizando", stage_render, weight=3.0),
     Stage("thumbnail", "Thumbnail", stage_thumbnail, weight=0.5, optional=True),
 ]

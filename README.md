@@ -26,7 +26,7 @@ Nenhum rosto, voz, vídeo ou roteiro é enviado para qualquer serviço externo.
 | 6 | Render FFmpeg 9:16 | **pronto** |
 | 7 | Interface React | **pronto** |
 | 8 | Ollama — roteiros | **pronto** |
-| 9 | Auto editor (EDL, cortes, zooms) | pendente |
+| 9 | Auto editor (EDL, cortes de enquadramento, zooms) | **pronto** |
 | 10 | Remotion — animações gráficas | pendente |
 | 11 | ComfyUI / Wan2.2 — B-roll generativo | adapter pronto, opt-in |
 | 12 | Polimento e performance | em andamento |
@@ -215,6 +215,18 @@ seus como matéria-prima:
 4. aplica lip-sync só na região necessária, preservando rosto, barba, cabelo,
    pele, iluminação, corpo, fundo e gestos;
 5. legenda, renderiza e valida.
+
+### Auto editor
+
+Opcional, desligado por padrão. Ele **não corta tempo**: o vídeo está
+lip-sincronizado quadro a quadro com o áudio, e remover trechos dessincronizaria
+a boca da fala. O que ele corta é *enquadramento* — fecha no rosto quando a
+frase importa e abre quando ela acaba, que é o que um editor faz com uma câmera
+só. A duração fica intacta e a sincronia não é tocada.
+
+O plano sai como dado, em `edit.json`: cada enquadramento com início, fim, zoom
+e o motivo do corte. Dá para ler e comparar entre execuções antes de renderizar.
+As legendas ficam fixas no quadro — só a imagem se move.
 
 ### Resume
 

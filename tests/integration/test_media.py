@@ -233,3 +233,111 @@ class TestGravacaoDoNavegador:
         ruim.write_bytes(b"isto nao e um video")
         with pytest.raises(ffmpeg.FFmpegError):
             ffmpeg.ensure_container_metadata(ruim)
+
+
+class TestAutoEditor:
+    """A EDL vira filtro e o filtro tem que sobreviver ao FFmpeg.
+
+    Testar só a string gerada não pega os dois erros que realmente acontecem:
+    vírgula não escapada (que separa filtros e quebra a cadeia) e o `zoompan`
+    assumindo 25 fps quando ninguém passa `fps`, o que baixaria a cadência do
+    render inteiro em silêncio.
+    """
+
+    @staticmethod
+    def _renderiza(origem, destino, filtros):
+        ffmpeg.run_ffmpeg(
+            [
+                "-i", str(origem),
+                "-vf", ",".join(["fps=30", *filtros]),
+                "-c:v", "libx264", "-preset", "ultrafast",
+                "-pix_fmt", "yuv420p",
+                str(destino),
+            ]
+        )
+        return destino
+
+    @pytest.fixture
+    def fonte(self, tmp_path):
+        alvo = tmp_path / "fonte.mp4"
+        ffmpeg.run_ffmpeg(
+            [
+                "-f", "lavfi",
+                "-i", "testsrc=size=270x480:rate=30:duration=6",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(alvo),
+            ]
+        )
+        return alvo
+
+    def _filtro(self):
+        from services.video.editor import Shot, EditDecisionList, build_zoom_filter
+
+        edl = EditDecisionList(
+            duration=6.0,
+            preset="sutil",
+            shots=[
+                Shot(0.0, 2.0, 1.0, "abertura"),
+                Shot(2.0, 4.0, 1.12, "frase nova"),
+                Shot(4.0, 6.0, 1.0, "frase nova"),
+            ],
+        )
+        return build_zoom_filter(edl, width=270, height=480, fps=30)
+
+    def test_filtro_roda_sem_erro(self, fonte, tmp_path) -> None:
+        saida = self._renderiza(fonte, tmp_path / "com_zoom.mp4", [self._filtro()])
+        assert ffmpeg.validate_video(saida, min_duration=5.0).has_video
+
+    def test_preserva_frames_resolucao_e_fps(self, fonte, tmp_path) -> None:
+        saida = self._renderiza(fonte, tmp_path / "com_zoom.mp4", [self._filtro()])
+        info = ffmpeg.probe(saida)
+        assert info.resolution == (270, 480)
+        assert info.video is not None
+        assert round(info.video.fps) == 30, "o zoompan derrubou a cadência para 25"
+        assert info.video.nb_frames == 180, "frames perdidos ou duplicados"
+
+    def test_cadencia_da_saida_manda_e_nao_a_da_origem(self, tmp_path) -> None:
+        """O bug real: origem a 25 fps derrubou um render configurado para 30.
+
+        O `zoompan` reescreve a cadência. Passar o fps do lip-sync (25) num
+        render de 30 baixa o vídeo inteiro em silêncio — nenhum erro, nenhum
+        aviso, só um arquivo com 20% menos quadros. O teste antigo não pegava
+        porque origem e destino tinham o mesmo fps.
+        """
+        from services.video.editor import Shot, EditDecisionList, build_zoom_filter
+
+        origem = tmp_path / "origem25.mp4"
+        ffmpeg.run_ffmpeg(
+            [
+                "-f", "lavfi",
+                "-i", "testsrc=size=270x480:rate=25:duration=4",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(origem),
+            ]
+        )
+        assert round(ffmpeg.probe(origem).video.fps) == 25
+
+        edl = EditDecisionList(
+            duration=4.0,
+            preset="sutil",
+            shots=[Shot(0.0, 2.0, 1.0, "a"), Shot(2.0, 4.0, 1.1, "b")],
+        )
+        filtro = build_zoom_filter(edl, width=270, height=480, fps=30)
+        saida = self._renderiza(origem, tmp_path / "saida30.mp4", [filtro])
+
+        info = ffmpeg.probe(saida)
+        assert round(info.video.fps) == 30, "a origem 25 fps venceu o destino 30 fps"
+        assert info.video.nb_frames == 120
+
+    def test_o_zoom_realmente_altera_a_imagem(self, fonte, tmp_path) -> None:
+        """Sem isto, um filtro que virasse no-op passaria nos outros testes."""
+        com = self._renderiza(fonte, tmp_path / "com.mp4", [self._filtro()])
+        sem = self._renderiza(fonte, tmp_path / "sem.mp4", [])
+        assert com.read_bytes() != sem.read_bytes()
+
+    def test_preset_sem_movimento_nao_gera_filtro(self) -> None:
+        """`clean` não pode custar um passo de reencode por nada."""
+        from services.video.editor import build_zoom_filter, plan_edit
+
+        edl = plan_edit(30.0, transcript=None, preset="clean")
+        assert build_zoom_filter(edl, width=270, height=480, fps=30) is None

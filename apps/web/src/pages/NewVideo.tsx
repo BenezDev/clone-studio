@@ -585,34 +585,47 @@ export default function NewVideo() {
 
       {/* 5 — Edição -------------------------------------------------------- */}
       {step === 4 && project && (
-        <Panel title="Edição" desc="Auto editor planejado para a FASE 9.">
-          <Alert level="info" title="Ainda não implementado">
-            Presets, cortes automáticos e zooms ainda não alteram o render. O
-            vídeo atual usa o template real, lip-sync e legendas sem edição
-            automática.
-          </Alert>
-          <Field label="Preset">
+        <Panel
+          title="Edição"
+          desc="Fecha o enquadramento no rosto quando a frase importa e abre quando ela acaba — o que um editor faz com uma câmera só."
+        >
+          <label className="checkbox" style={{ marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={project.editing.auto_cut}
+              onChange={(e) =>
+                updateProject({ editing: { auto_cut: e.target.checked } })
+              }
+            />
+            auto editor
+          </label>
+
+          <Field
+            label="Preset"
+            hint="O plano fica em edit.json, dentro da pasta do projeto — dá para conferir onde cada corte caiu."
+          >
             <select
               className="select"
               value={project.editing.preset}
-              disabled
+              disabled={!project.editing.auto_cut}
+              onChange={(e) =>
+                updateProject({ editing: { preset: e.target.value } })
+              }
             >
-              {presets.data?.editing.map((value) => (
-                <option key={value} value={value}>
-                  {value}
+              {presets.data?.editing.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
                 </option>
               ))}
             </select>
           </Field>
 
-          <label className="checkbox" style={{ marginBottom: 14 }}>
-            <input
-              type="checkbox"
-              checked={project.editing.auto_cut}
-              disabled
-            />
-            cortes e zooms automáticos (indisponível)
-          </label>
+          <Alert level="info" title="Não corta tempo, corta enquadramento">
+            O vídeo está lip-sincronizado quadro a quadro com a voz. Remover
+            trechos dessincronizaria a boca da fala, então o auto editor muda o
+            enquadramento e preserva a duração. As legendas ficam fixas no
+            quadro, sem acompanhar o zoom.
+          </Alert>
 
           <button className="btn btn-primary" onClick={() => setStep(5)}>
             Continuar

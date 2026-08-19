@@ -421,3 +421,110 @@ class TestGraficos:
         for x in (0, 536):
             borda = self._pixels(com_graficos, 0.9, 4, 300, x=x, y=int(960 * 0.20))
             assert all(sum(p) < 120 for p in borda), "há tinta encostando na borda"
+
+
+class TestComposicaoDeBroll:
+    """O apoio visual cobre a imagem sem mexer na duração.
+
+    Duração é a métrica crítica: o vídeo está lip-sincronizado com o áudio, e
+    qualquer quadro a mais ou a menos dessincroniza a boca da fala. `overlay`
+    sem `eof_action=pass` trunca a saída no fim do primeiro apoio — o teste de
+    duração é o que pega isso.
+    """
+
+    @staticmethod
+    def _pixel(video, tempo: float) -> tuple[int, int, int]:
+        import subprocess
+
+        proc = subprocess.run(
+            [
+                ffmpeg.ffmpeg_binary(), "-v", "error",
+                "-ss", str(tempo), "-i", str(video),
+                "-vf", "crop=2:2:270:480",
+                "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
+            ],
+            capture_output=True,
+            check=True,
+        )
+        d = proc.stdout
+        return (d[0], d[1], d[2])
+
+    @pytest.fixture
+    def cenario(self, temp_root, tmp_path):
+        from services.video.broll import BrollAsset, BrollCut
+
+        paths_broll = temp_root / "data" / "assets" / "broll"
+        paths_broll.mkdir(parents=True, exist_ok=True)
+
+        base = tmp_path / "base.mp4"
+        ffmpeg.run_ffmpeg(
+            ["-f", "lavfi", "-i", "color=c=green:size=540x960:rate=30:duration=10",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", str(base)]
+        )
+        video = paths_broll / "apoio_vermelho.mp4"
+        ffmpeg.run_ffmpeg(
+            ["-f", "lavfi", "-i", "color=c=red:size=320x180:rate=30:duration=6",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", str(video)]
+        )
+        imagem = paths_broll / "apoio_azul.png"
+        ffmpeg.run_ffmpeg(
+            ["-f", "lavfi", "-i", "color=c=blue:size=400x400", "-frames:v", "1",
+             str(imagem)]
+        )
+
+        biblioteca = [
+            BrollAsset("apoio_vermelho", str(video.relative_to(temp_root)),
+                       "video", 6.0, 320, 180, ("apoio", "vermelho")),
+            BrollAsset("apoio_azul", str(imagem.relative_to(temp_root)),
+                       "image", 0.0, 400, 400, ("apoio", "azul")),
+        ]
+        cortes = [
+            BrollCut("apoio_vermelho", 2.0, 4.5, "vermelho", 1.0),
+            BrollCut("apoio_azul", 6.0, 8.0, "azul", 1.0),
+        ]
+        return base, cortes, biblioteca
+
+    def test_duracao_intacta(self, cenario, tmp_path) -> None:
+        from services.video.broll import compose
+
+        base, cortes, biblioteca = cenario
+        saida = compose(base, cortes, biblioteca, tmp_path / "c.mp4",
+                        width=540, height=960, fps=30)
+        info = ffmpeg.probe(saida)
+        assert info.duration == pytest.approx(10.0, abs=0.1), "a saída foi truncada"
+        assert info.video.nb_frames == 300
+
+    def test_apoio_aparece_e_sai_na_hora(self, cenario, tmp_path) -> None:
+        from services.video.broll import compose
+
+        base, cortes, biblioteca = cenario
+        saida = compose(base, cortes, biblioteca, tmp_path / "c.mp4",
+                        width=540, height=960, fps=30)
+        r, g, b = self._pixel(saida, 1.0)
+        assert g > r and g > b, "o apoio entrou antes da hora"
+        r, g, b = self._pixel(saida, 3.0)
+        assert r > 200 and g < 60, "o apoio em vídeo não cobriu"
+        r, g, b = self._pixel(saida, 7.0)
+        assert b > 200 and r < 60, "o apoio em imagem não cobriu"
+        r, g, b = self._pixel(saida, 9.0)
+        assert g > r and g > b, "o apoio não saiu de cena"
+
+    def test_imagem_parada_cobre_a_janela_toda(self, cenario, tmp_path) -> None:
+        """Sem `-loop`, a imagem vira um quadro só e some no seguinte."""
+        from services.video.broll import compose
+
+        base, cortes, biblioteca = cenario
+        saida = compose(base, cortes, biblioteca, tmp_path / "c.mp4",
+                        width=540, height=960, fps=30)
+        for tempo in (6.2, 7.0, 7.8):
+            r, g, b = self._pixel(saida, tempo)
+            assert b > 200, f"a imagem sumiu em t={tempo}"
+
+    def test_asset_ausente_nao_derruba(self, cenario, tmp_path) -> None:
+        from services.video.broll import BrollCut, compose
+
+        base, cortes, biblioteca = cenario
+        cortes = [*cortes, BrollCut("nao_existe", 1.0, 2.0, "x", 1.0)]
+        saida = compose(base, cortes, biblioteca, tmp_path / "c.mp4",
+                        width=540, height=960, fps=30)
+        assert ffmpeg.probe(saida).duration == pytest.approx(10.0, abs=0.1)

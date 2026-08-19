@@ -80,6 +80,10 @@ class EditDecisionList:
     preset: str
     shots: list[Shot] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    # Cortes de apoio visual, como dicionários simples. São decisões de edição e
+    # pertencem à EDL, mas guardá-los como tipo de `broll.py` criaria import
+    # circular entre planejamento de enquadramento e biblioteca de assets.
+    broll: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def has_movement(self) -> bool:
@@ -94,6 +98,7 @@ class EditDecisionList:
                 {**asdict(s), "start": round(s.start, 3), "end": round(s.end, 3)}
                 for s in self.shots
             ],
+            "broll": self.broll,
             "warnings": self.warnings,
         }
 
@@ -119,6 +124,7 @@ class EditDecisionList:
                 )
                 for s in raw.get("shots", [])
             ],
+            broll=list(raw.get("broll", [])),
             warnings=list(raw.get("warnings", [])),
         )
 

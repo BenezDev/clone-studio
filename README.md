@@ -28,7 +28,8 @@ Nenhum rosto, voz, vídeo ou roteiro é enviado para qualquer serviço externo.
 | 8 | Ollama — roteiros | **pronto** |
 | 9 | Auto editor (EDL, cortes de enquadramento, zooms) | **pronto** |
 | 10 | Animações gráficas (hook, lower third, progresso, end card) | **pronto** |
-| 11 | ComfyUI / Wan2.2 — B-roll generativo | adapter pronto, opt-in |
+| 11 | B-roll de biblioteca | **pronto** |
+| 11b | ComfyUI / Wan2.2 — B-roll generativo | adapter pronto, opt-in |
 | 12 | Polimento e performance | em andamento |
 
 ---
@@ -238,6 +239,25 @@ terceiro viajando junto com o software.
 
 Os textos vêm do roteiro. Sem hook e sem CTA escritos, só a barra de progresso
 aparece: card com texto genérico é pior que card nenhum.
+
+### B-roll
+
+Trechos de apoio da sua biblioteca local, em `data/assets/broll/`. Entram
+**por cima** da imagem por alguns segundos: o áudio segue e o lip-sync não é
+tocado — a mesma restrição do auto editor.
+
+A escolha é por palavra-chave, comparando o campo de B-roll da cena com o nome
+do arquivo, sem acento e sem palavra vazia. Não é índice semântico e não se
+chama assim: isso exigiria um modelo de embeddings, outro peso e outro
+ambiente. Para uma biblioteca pessoal com nomes descritivos, casar palavra
+resolve.
+
+Só entra onde a cena pediu. A cobertura é limitada a 40% do vídeo, com no
+máximo 4 trechos — acima disso deixa de ser um vídeo seu com apoio visual.
+
+O B-roll **generativo** (ComfyUI + Wan2.2) continua opt-in e desligado: difusão
+de vídeo sem GPU dedicada levaria horas por segundo gerado, e o registro de
+modelos declara isso em vez de esconder.
 
 ### Resume
 

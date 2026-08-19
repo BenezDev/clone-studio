@@ -490,6 +490,38 @@ def stage_captions(ctx: PipelineContext) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _plan_broll(ctx: PipelineContext, duration: float) -> tuple[list, list[str]]:
+    """Escolhe os trechos de apoio para as cenas que pediram B-roll.
+
+    Só entra onde a cena tem `broll_prompt` preenchido. Enfiar imagem por conta
+    própria em cima do rosto de alguém seria adivinhação cara de desfazer.
+    """
+    from services.video.broll import index_broll, plan_broll
+
+    if not ctx.settings.broll.enabled:
+        return [], []
+
+    cenas = ctx.get("script_scenes", []) or []
+    if not any((c.get("broll_prompt") or "").strip() for c in cenas):
+        return [], []
+
+    biblioteca = index_broll()
+    if not biblioteca:
+        return [], [
+            "O roteiro pede B-roll, mas a biblioteca está vazia "
+            "(data/assets/broll/)."
+        ]
+
+    cortes, avisos = plan_broll(
+        cenas,
+        library=biblioteca,
+        duration=duration,
+        transcript=ctx.get("transcript"),
+    )
+    ctx.set("broll_library", biblioteca)
+    return cortes, avisos
+
+
 def _plan_graphics(ctx: PipelineContext) -> None:
     """Planeja os overlays e grava `graphics.ass`.
 
@@ -555,12 +587,19 @@ def stage_edit(ctx: PipelineContext) -> None:
     ctx.set("graphics_ass", None)
     _plan_graphics(ctx)
 
-    if not project.editing.auto_cut:
-        ctx.emit(1.0, "Auto editor desativado; enquadramento fixo.")
-        return
-
     video = ctx.require("lipsync_video")
     info = ffmpeg.probe(video)
+    cortes_broll, avisos_broll = _plan_broll(ctx, info.duration)
+    ctx.set("broll_cuts", cortes_broll)
+    for aviso in avisos_broll:
+        ctx.emit(0.4, aviso)
+
+    if not project.editing.auto_cut:
+        if cortes_broll:
+            ctx.emit(1.0, f"{len(cortes_broll)} trecho(s) de apoio; enquadramento fixo.")
+        else:
+            ctx.emit(1.0, "Auto editor desativado; enquadramento fixo.")
+        return
 
     # As palavras enfatizadas vêm do roteiro: são os pontos onde o autor já
     # disse que a frase importa. Melhor sinal que qualquer heurística de áudio.
@@ -577,6 +616,7 @@ def stage_edit(ctx: PipelineContext) -> None:
         max_shot_seconds=ctx.settings.editing.max_shot_seconds,
         punch_in_strength=ctx.settings.editing.punch_in_strength,
     )
+    edl.broll = [c.to_dict() for c in cortes_broll]
     edl.save(project.edit_file)
     ctx.set("edl", edl)
     project.record_stage("edit", output=project.edit_file)
@@ -603,6 +643,36 @@ def stage_render(ctx: PipelineContext) -> None:
     video = ctx.require("lipsync_video")
     audio = ctx.require("voice_audio")
     captions = ctx.get("captions_ass")
+
+    # O B-roll é queimado num passo próprio, antes do render, em vez de virar
+    # mais um filtro: `overlay` exige entradas extras e trocaria o `-vf` do
+    # render por um `filter_complex` — mudança de risco no caminho que produz o
+    # arquivo final. Como passo separado, o artefato fica em disco, validável e
+    # inspecionável como o de qualquer outra etapa.
+    cortes = ctx.get("broll_cuts") or []
+    if cortes:
+        from services.video.broll import compose
+
+        composto = project.stages_dir / "broll.mp4"
+        origem = ffmpeg.probe(video).video
+        try:
+            compose(
+                video,
+                cortes,
+                ctx.get("broll_library") or [],
+                composto,
+                width=(origem.width if origem else project.render.width) or project.render.width,
+                height=(origem.height if origem else project.render.height) or project.render.height,
+                fps=int(round((origem.fps if origem else 0) or project.render.fps)),
+            )
+            ffmpeg.validate_video(composto, min_duration=0.5)
+            video = composto
+            ctx.emit(0.15, f"{len(cortes)} trecho(s) de apoio aplicados.")
+        except (ffmpeg.FFmpegError, ffmpeg.ValidationError, ValueError) as exc:
+            # Apoio visual é acréscimo; perder o render inteiro por causa dele
+            # seria trocar o essencial pelo acessório.
+            composto.unlink(missing_ok=True)
+            ctx.emit(0.15, f"B-roll não aplicado ({exc}); seguindo sem apoio visual.")
 
     suffix = "preview" if ctx.preview else "final"
     output = project.renders_dir / f"{project.id}-{suffix}.mp4"

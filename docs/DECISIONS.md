@@ -468,3 +468,55 @@ meio da frase — a ordem é escapar, depois quebrar.
 
 **Teto de duração.** Hook e end card ficam limitados a 40% do vídeo. Sem isso,
 num clipe curto o end card cobria o clipe inteiro em vez de fechar.
+
+---
+
+## D-024 · B-roll de biblioteca; o generativo continua fora (2026-08-19)
+
+**Contexto.** A fase 11 estava escrita como "ComfyUI / Wan2.2 — B-roll
+generativo". Wan2.2 é difusão de vídeo: sem GPU dedicada são horas por segundo
+gerado. O adapter já existia e já declarava a incompatibilidade corretamente.
+
+**Decisão.** Implementar o B-roll que **funciona** neste hardware: biblioteca
+local de arquivos, escolhidos por palavra-chave e compostos por cima da imagem.
+O generativo fica exatamente onde estava — opt-in, desligado, declarado
+incompatível. Resolve o mesmo problema de produção sem prometer o que a máquina
+não entrega.
+
+**Cobertura, não corte.** Mesma restrição do auto editor (D-022): o vídeo está
+lip-sincronizado quadro a quadro com o áudio, então o apoio entra por cima e a
+duração fica intacta. É o que B-roll é num vídeo de uma câmera só.
+
+**Correspondência por palavra-chave, e o nome disso não é "semântica".** A
+página de Assets prometia "indexação semântica"; isso exigiria um modelo de
+embeddings, outro peso para baixar e outro ambiente. A busca compara os termos
+do pedido com as palavras do nome do arquivo, sem acento e sem palavra vazia.
+Para uma biblioteca pessoal de dezenas de arquivos com nomes descritivos,
+resolve — e o texto da página foi corrigido para dizer o que o código faz.
+
+**Nada entra sem o autor pedir.** Só há B-roll onde a cena tem `broll_prompt`
+preenchido, e só acima de nota mínima de correspondência. Um falso positivo
+cobre o rosto da pessoa com a imagem errada no meio da frase, e ela só descobre
+assistindo ao render pronto — daí boa parte dos testes ser sobre o que **não**
+pode casar.
+
+**Passo próprio, não mais um filtro.** `overlay` exige entradas extras e
+trocaria o `-vf` do render por um `filter_complex` — mudança de risco no
+caminho que produz o arquivo final. Como passo separado, o artefato fica em
+`stages/broll.mp4`, validável e inspecionável como o de qualquer outra etapa. E
+falha de B-roll não derruba o render: apoio visual é acréscimo, e perder o
+render inteiro por causa dele seria trocar o essencial pelo acessório.
+
+**Duas armadilhas do `overlay`.**
+
+1. Sem `eof_action=pass` e `shortest=0`, o primeiro trecho de apoio que termina
+   **encerra a saída inteira** e o vídeo sai truncado. Num pipeline onde a
+   duração precisa bater com o áudio ao quadro, isso quebra a sincronia.
+2. Imagem parada precisa de `-loop 1 -t <duração>` na entrada. Sem isso o
+   overlay recebe um quadro só e a imagem some no seguinte.
+
+**Aparar, não descartar.** A primeira versão descartava o corte inteiro quando
+ele não cabia no teto de cobertura — e num vídeo curto o primeiro corte já
+estoura o teto, então o roteiro que pediu apoio visual não recebia nenhum.
+Agora o trecho é encurtado para caber, e só é recusado se o que sobra fica
+abaixo do mínimo.

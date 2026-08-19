@@ -235,6 +235,17 @@ export interface Scene {
   emphasis_words: string[];
 }
 
+export interface BrollAsset {
+  id: string;
+  path: string;
+  kind: "video" | "image";
+  duration: number;
+  width: number;
+  height: number;
+  keywords: string[];
+  preview_url: string;
+}
+
 export interface Script {
   title: string;
   hook: string;
@@ -284,6 +295,19 @@ export const api = {
       ),
     clearCache: (name: string) =>
       del<{ entries_removed: number }>(`/settings/cache/${name}`),
+  },
+
+  assets: {
+    broll: (q = "") =>
+      get<{
+        assets: BrollAsset[];
+        directory: string;
+        matched: string | null;
+        accepted: string[];
+      }>(`/assets/broll?q=${encodeURIComponent(q)}`),
+    upload: (form: FormData) =>
+      upload<{ asset: BrollAsset }>("/assets/broll/upload", form),
+    remove: (id: string) => del<{ deleted: boolean }>(`/assets/broll/${id}`),
   },
 
   models: {

@@ -24,6 +24,7 @@ from fastapi.responses import JSONResponse
 
 from apps.api.app.uploads import RequestBodyLimitMiddleware
 from apps.api.app.routers import (
+    assets,
     diagnostics,
     jobs,
     media,
@@ -147,6 +148,7 @@ for router in (
     diagnostics.router,
     settings_router.router,
     models.router,
+    assets.router,
     voice.router,
     templates.router,
     projects.router,

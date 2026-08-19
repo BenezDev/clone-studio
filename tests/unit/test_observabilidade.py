@@ -92,3 +92,37 @@ class TestDiagnostico:
         broll = next(c for c in report.checks if c.name == "Biblioteca de B-roll")
         assert broll.level is not Level.ERROR
         assert broll.level is not Level.WARN
+
+
+class TestOrdemDoRender:
+    """Trabalho caro não pode acontecer antes do atalho que o descarta."""
+
+    def test_broll_e_composto_depois_do_resume(self) -> None:
+        """Bug real: a composição rodava antes do retorno do resume.
+
+        Um render já concluído gastava minutos queimando o apoio visual e
+        jogava fora no `return` seguinte — invisível, porque o resultado saía
+        correto de qualquer forma.
+        """
+        fonte = (ROOT / "core" / "pipeline" / "stages.py").read_text(encoding="utf-8")
+        arvore = ast.parse(fonte)
+        render = next(
+            no
+            for no in ast.walk(arvore)
+            if isinstance(no, ast.FunctionDef) and no.name == "stage_render"
+        )
+
+        retornos = [
+            no.lineno for no in ast.walk(render) if isinstance(no, ast.Return)
+        ]
+        composicao = [
+            no.lineno
+            for no in ast.walk(render)
+            if isinstance(no, ast.ImportFrom)
+            and no.module == "services.video.broll"
+        ]
+        assert retornos, "o retorno antecipado do resume sumiu"
+        assert composicao, "a composição de B-roll sumiu do render"
+        assert min(composicao) > min(retornos), (
+            "a composição de B-roll voltou a rodar antes do resume"
+        )

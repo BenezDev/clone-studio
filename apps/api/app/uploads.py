@@ -16,6 +16,9 @@ from typing import Any, Awaitable, BinaryIO, Callable
 MIB = 1024 * 1024
 MAX_TEMPLATE_UPLOAD_BYTES = 1024 * MIB
 MAX_VOICE_UPLOAD_BYTES = 100 * MIB
+# B-roll é material de apoio de poucos segundos; um teto menor que o de template
+# reduz a superfície de um upload acidental de arquivo enorme.
+MAX_BROLL_UPLOAD_BYTES = 512 * MIB
 _COPY_CHUNK = MIB
 _MULTIPART_OVERHEAD = MIB
 
@@ -40,8 +43,18 @@ class RequestBodyLimitMiddleware:
 
     @staticmethod
     def _limit(path: str) -> int | None:
+        """Teto por rota de upload.
+
+        Toda rota que receba `UploadFile` precisa aparecer aqui. Sem entrada, o
+        parser multipart grava o corpo inteiro em disco antes de qualquer
+        código do projeto rodar, e o teto do `copy_file_limited` chega tarde
+        demais. `tests/unit/test_robustness.py` enumera as rotas e falha se
+        alguma ficar de fora.
+        """
         if path == "/api/templates/upload":
             return MAX_TEMPLATE_UPLOAD_BYTES + _MULTIPART_OVERHEAD
+        if path == "/api/assets/broll/upload":
+            return MAX_BROLL_UPLOAD_BYTES + _MULTIPART_OVERHEAD
         if path.startswith("/api/voice/profiles/") and path.endswith("/enroll"):
             return MAX_VOICE_UPLOAD_BYTES + _MULTIPART_OVERHEAD
         return None

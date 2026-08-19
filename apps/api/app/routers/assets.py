@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from apps.api.app.uploads import (
-    MAX_TEMPLATE_UPLOAD_BYTES,
+    MAX_BROLL_UPLOAD_BYTES,
     UploadTooLarge,
     copy_file_limited,
     safe_upload_stem,
@@ -73,12 +73,16 @@ def upload_broll(file: UploadFile = File(...)) -> dict[str, Any]:
     stem = safe_upload_stem(file.filename, fallback="broll")
     destino = unique_upload_path(paths.broll_dir, stem, suffix)
     try:
-        copy_file_limited(file.file, destino, MAX_TEMPLATE_UPLOAD_BYTES)
+        copy_file_limited(file.file, destino, MAX_BROLL_UPLOAD_BYTES)
     except UploadTooLarge as exc:
         raise HTTPException(status_code=413, detail=str(exc)) from exc
 
     try:
-        ffmpeg.ensure_container_metadata(destino)
+        # O reparo de cabeçalho é para contêiner de vídeo gravado em stream.
+        # Imagem parada não tem duração para recuperar, e chamar isso nela só
+        # gastaria um remux inútil.
+        if suffix in VIDEO_SUFFIXES:
+            ffmpeg.ensure_container_metadata(destino)
         ffmpeg.probe(destino)
     except Exception as exc:  # noqa: BLE001 - devolve o arquivo ruim ao usuário
         destino.unlink(missing_ok=True)
@@ -86,7 +90,7 @@ def upload_broll(file: UploadFile = File(...)) -> dict[str, Any]:
             status_code=400, detail=f"Arquivo inválido: {exc}"
         ) from exc
 
-    encontrado = next((a for a in index_broll() if a.id == destino.stem), None)
+    encontrado = next((a for a in index_broll() if a.id == destino.name), None)
     if encontrado is None:
         raise HTTPException(status_code=500, detail="O asset não pôde ser indexado.")
     return {"asset": _serialize(encontrado)}

@@ -106,12 +106,45 @@ def normalize(text: str) -> list[str]:
     return [p for p in bruto if len(p) > 2 and p not in STOPWORDS]
 
 
+_INDEX_CACHE: dict[str, tuple[tuple, list["BrollAsset"]]] = {}
+
+
+def _directory_signature(directory: Path) -> tuple:
+    """Impressão digital barata do diretório: nome, tamanho e mtime de cada arquivo."""
+    try:
+        return tuple(
+            sorted(
+                (f.name, f.stat().st_size, f.stat().st_mtime_ns)
+                for f in directory.iterdir()
+                if f.is_file()
+            )
+        )
+    except OSError:
+        return ()
+
+
 def index_broll(directory: Path | None = None) -> list[BrollAsset]:
-    """Varre a pasta e lê metadados reais de cada arquivo."""
+    """Varre a pasta e lê metadados reais de cada arquivo.
+
+    O resultado é cacheado por assinatura do diretório porque cada arquivo custa
+    um subprocesso de `ffprobe`. Sem isso a busca da página de Assets dispara
+    uma reindexação **por tecla digitada** — numa biblioteca de cinquenta
+    arquivos, são cinquenta processos por caractere.
+
+    A assinatura inclui tamanho e mtime, então trocar um arquivo por outro de
+    mesmo nome invalida o cache. Mais barato que reindexar, mais correto que
+    cachear só pela contagem.
+    """
     paths = get_paths()
     alvo = Path(directory) if directory else paths.broll_dir
     if not alvo.exists():
         return []
+
+    chave = str(alvo.resolve())
+    assinatura = _directory_signature(alvo)
+    guardado = _INDEX_CACHE.get(chave)
+    if guardado is not None and guardado[0] == assinatura:
+        return list(guardado[1])
 
     assets: list[BrollAsset] = []
     for arquivo in sorted(alvo.iterdir()):
@@ -134,7 +167,12 @@ def index_broll(directory: Path | None = None) -> list[BrollAsset]:
         largura, altura = info.resolution or (0, 0)
         assets.append(
             BrollAsset(
-                id=arquivo.stem,
+                # O nome COM extensão: dois arquivos de mesmo nome-base
+                # (`x.mp4` e `x.png`) produziriam ids iguais, e aí `plan_broll`
+                # escolheria um enquanto `compose` — que monta um dicionário por
+                # id — usaria o outro. As palavras-chave continuam saindo do
+                # nome-base, para a extensão não virar termo de busca.
+                id=arquivo.name,
                 path=str(arquivo.relative_to(paths.root)),
                 kind=kind,
                 duration=round(info.duration, 2) if kind == "video" else 0.0,
@@ -143,7 +181,13 @@ def index_broll(directory: Path | None = None) -> list[BrollAsset]:
                 keywords=tuple(normalize(arquivo.stem)),
             )
         )
+    _INDEX_CACHE[chave] = (assinatura, list(assets))
     return assets
+
+
+def clear_index_cache() -> None:
+    """Esquece o índice. Usado por testes e após escrita direta na pasta."""
+    _INDEX_CACHE.clear()
 
 
 def score_asset(asset: BrollAsset, terms: Sequence[str]) -> float:
@@ -239,26 +283,59 @@ def plan_broll(
 def _scene_windows(
     scenes: Sequence[dict[str, Any]], duration: float, transcript: Any
 ) -> list[tuple[float, float]]:
-    segmentos = list(getattr(transcript, "segments", []) or []) if transcript else []
-    if len(segmentos) >= len(scenes):
-        janelas = []
-        for indice in range(len(scenes)):
-            inicio = float(segmentos[indice].start)
-            fim = (
-                float(segmentos[indice + 1].start)
-                if indice + 1 < len(segmentos)
-                else duration
-            )
-            janelas.append((inicio, fim))
-        return janelas
+    """Em que instante cada cena do roteiro é falada.
 
-    # Proporcional ao tamanho do texto: cena maior fala por mais tempo.
-    tamanhos = [max(1, len(str(s.get("text", "")))) for s in scenes]
-    total = sum(tamanhos)
+    O casamento é por **posição no texto**, não por índice de segmento. O
+    Whisper segmenta por pausa da fala, não por cena do roteiro: três cenas
+    podem virar cinco segmentos, ou um só. Parear ``segmento[i]`` com
+    ``cena[i]`` — como esta função fazia — jogava o B-roll para o lugar errado
+    e, com mais segmentos que cenas, deixava o fim do vídeo inteiro sem
+    cobertura.
+
+    Aqui o texto das cenas é concatenado, cada fronteira vira uma posição em
+    caracteres, e as palavras transcritas são percorridas acumulando tamanho
+    até cruzar essa posição. O tempo dessa palavra é a fronteira.
+    """
+    tamanhos = [max(1, len(str(s.get("text", "")).strip())) for s in scenes]
+    total_chars = sum(tamanhos)
+
+    palavras = list(getattr(transcript, "words", []) or []) if transcript else []
+    if palavras:
+        # Fronteiras acumuladas, em fração do texto total do roteiro.
+        fronteiras: list[float] = []
+        acumulado = 0
+        for tamanho in tamanhos[:-1]:
+            acumulado += tamanho
+            fronteiras.append(acumulado / total_chars)
+
+        total_transcrito = sum(len(w.text.strip()) for w in palavras) or 1
+        tempos: list[float] = []
+        andado = 0
+        alvo = 0
+        for palavra in palavras:
+            andado += len(palavra.text.strip())
+            while alvo < len(fronteiras) and andado / total_transcrito >= fronteiras[alvo]:
+                # `end`, não `start`: a fronteira fica onde a palavra que fecha
+                # a cena TERMINA de ser dita. Usar o início colocaria o corte
+                # em cima da última palavra da cena anterior.
+                tempos.append(float(palavra.end))
+                alvo += 1
+            if alvo >= len(fronteiras):
+                break
+        # Se a transcrição acabou antes de cruzar todas as fronteiras, o resto
+        # cai no fim: melhor uma janela vazia que uma janela errada.
+        tempos.extend([duration] * (len(fronteiras) - len(tempos)))
+
+        limites = [0.0, *tempos, duration]
+        return [
+            (limites[i], max(limites[i], limites[i + 1])) for i in range(len(scenes))
+        ]
+
+    # Sem transcrição: proporcional ao tamanho do texto. Cena maior fala mais.
     janelas = []
     cursor = 0.0
     for tamanho in tamanhos:
-        fatia = duration * tamanho / total
+        fatia = duration * tamanho / total_chars
         janelas.append((cursor, cursor + fatia))
         cursor += fatia
     return janelas

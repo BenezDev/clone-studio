@@ -311,3 +311,66 @@ def test_orquestracao_resume_e_invalidacao_em_cascata(temp_root) -> None:
     executed.clear()
     run_pipeline(project, stages=plan, force_stages={"template"})
     assert executed == ["template", "render"]
+
+
+def test_toda_rota_de_upload_tem_teto_de_corpo(temp_root) -> None:
+    """Rota nova de upload não pode escapar do limitador de corpo.
+
+    O `UploadFile` do FastAPI protege a RAM, não o disco: sem entrada no
+    middleware, o parser multipart grava o corpo inteiro antes de qualquer
+    código do projeto rodar, e o teto do `copy_file_limited` chega tarde demais.
+
+    Este teste existe porque foi exatamente assim que a rota de B-roll entrou —
+    passando pelo `copy_file_limited` e esquecendo o middleware. Enumerar as
+    rotas em vez de listá-las à mão é o que impede a próxima repetir.
+    """
+    import inspect
+    import re
+
+    from apps.api.app.main import app
+    from apps.api.app.uploads import RequestBodyLimitMiddleware
+
+    def caminhos_de_upload(rotas, prefixo=""):
+        """Coleta (caminho completo) de toda rota que receba um UploadFile.
+
+        Esta versão do FastAPI não achata os routers incluídos: guarda cada um
+        num `_IncludedRouter` com o prefixo à parte. Percorrer só `app.routes`
+        encontraria zero rotas — e um teste que não encontra nada passa em
+        silêncio, que é pior que não existir.
+        """
+        for rota in rotas:
+            interno = getattr(rota, "original_router", None)
+            if interno is not None:
+                contexto = getattr(rota, "include_context", None)
+                yield from caminhos_de_upload(
+                    interno.routes, prefixo + getattr(contexto, "prefix", "")
+                )
+                continue
+
+            endpoint = getattr(rota, "endpoint", None)
+            if endpoint is None:
+                continue
+            try:
+                assinatura = inspect.signature(endpoint)
+            except (TypeError, ValueError):
+                continue
+            # Os routers usam `from __future__ import annotations`, então a
+            # anotação chega como string.
+            if any(
+                "UploadFile" in str(parametro.annotation)
+                for parametro in assinatura.parameters.values()
+            ):
+                yield prefixo + rota.path
+
+    # O middleware decide pelo caminho real da requisição, não pelo template.
+    achadas = [re.sub(r"\{[^}]+\}", "x", c) for c in caminhos_de_upload(app.routes)]
+
+    assert achadas, "nenhuma rota de upload encontrada — o teste cegou"
+    sem_teto = [
+        caminho
+        for caminho in achadas
+        if RequestBodyLimitMiddleware._limit(caminho) is None
+    ]
+    assert not sem_teto, (
+        f"rota(s) de upload sem teto de corpo no middleware: {sem_teto}"
+    )

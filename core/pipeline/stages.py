@@ -654,11 +654,30 @@ def stage_render(ctx: PipelineContext) -> None:
     audio = ctx.require("voice_audio")
     captions = ctx.get("captions_ass")
 
+    suffix = "preview" if ctx.preview else "final"
+    output = project.renders_dir / f"{project.id}-{suffix}.mp4"
+    record_name = f"render_{suffix}"
+    started = time.monotonic()
+
+    if (
+        "render" not in ctx.force_stages
+        and project.stage_completed(record_name)
+        and output.exists()
+    ):
+        ffmpeg.validate_video(output, min_duration=0.5, require_audio=True)
+        ctx.set("render_output", output)
+        ctx.emit(1.0, f"{suffix.capitalize()} reaproveitado.")
+        return
+
     # O B-roll é queimado num passo próprio, antes do render, em vez de virar
     # mais um filtro: `overlay` exige entradas extras e trocaria o `-vf` do
     # render por um `filter_complex` — mudança de risco no caminho que produz o
     # arquivo final. Como passo separado, o artefato fica em disco, validável e
     # inspecionável como o de qualquer outra etapa.
+    #
+    # Vem DEPOIS do retorno do resume de propósito: antes dele, um render já
+    # concluído gastava minutos compondo o apoio visual e jogava fora no
+    # `return` seguinte.
     cortes = ctx.get("broll_cuts") or []
     if cortes:
         from services.video.broll import compose
@@ -683,21 +702,6 @@ def stage_render(ctx: PipelineContext) -> None:
             # seria trocar o essencial pelo acessório.
             composto.unlink(missing_ok=True)
             ctx.emit(0.15, f"B-roll não aplicado ({exc}); seguindo sem apoio visual.")
-
-    suffix = "preview" if ctx.preview else "final"
-    output = project.renders_dir / f"{project.id}-{suffix}.mp4"
-    record_name = f"render_{suffix}"
-    started = time.monotonic()
-
-    if (
-        "render" not in ctx.force_stages
-        and project.stage_completed(record_name)
-        and output.exists()
-    ):
-        ffmpeg.validate_video(output, min_duration=0.5, require_audio=True)
-        ctx.set("render_output", output)
-        ctx.emit(1.0, f"{suffix.capitalize()} reaproveitado.")
-        return
 
     # As legendas foram dimensionadas com project.render; o render precisa usar
     # exatamente os mesmos valores, senão o texto sai com o tamanho errado.

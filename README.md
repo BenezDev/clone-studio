@@ -30,7 +30,7 @@ Nenhum rosto, voz, vídeo ou roteiro é enviado para qualquer serviço externo.
 | 10 | Animações gráficas (hook, lower third, progresso, end card) | **pronto** |
 | 11 | B-roll de biblioteca | **pronto** |
 | 11b | ComfyUI / Wan2.2 — B-roll generativo | adapter pronto, opt-in |
-| 12 | Polimento e performance | em andamento |
+| 12 | Polimento e performance | **pronto** |
 
 ---
 
@@ -382,16 +382,40 @@ dizendo exatamente o que falta instalar.
 Os números abaixo são medidos em **CPU_ONLY** (Intel i7-1355U, 15 GB de RAM,
 sem GPU dedicada):
 
+Render completo de um vídeo de 4,9 s, medido de ponta a ponta:
+
 | Etapa | Custo |
 |---|---|
-| TTS (Qwen3-TTS 0.6B) | ~8 s de processamento por segundo de áudio |
-| Transcrição (faster-whisper small, int8) | ~1× tempo real |
-| Lip-sync — preprocessamento do template | ~5 s por frame, **uma vez por template** |
-| Lip-sync — inferência | vários segundos por frame |
-| Render FFmpeg | segundos |
+| Preparação | 0,0 s |
+| TTS (Qwen3-TTS 0.6B) | 42,7 s |
+| Montagem do template | 0,7 s |
+| **Lip-sync (MuseTalk)** | **1206,6 s — 95% do total** |
+| Legendas (faster-whisper small, int8) | 4,2 s |
+| Edição (EDL + gráficos + B-roll) | 0,1 s |
+| Render FFmpeg | 3,9 s |
+| Thumbnail | 4,6 s |
 
-O preprocessamento de template é cacheado: o primeiro vídeo com um template
-novo é caro, os seguintes com o mesmo template pulam essa etapa por completo.
+O lip-sync domina, e por dentro dele o tempo se distribui assim — com o cache
+de template **quente**, que é o caso a partir do segundo vídeo:
+
+| Fase do lip-sync | Tempo | Fatia |
+|---|---|---|
+| Inferência | 423 s | 88% |
+| Carregamento dos modelos | 27 s | 6% |
+| Recomposição dos frames | 26 s | 5% |
+| Áudio, template e montagem | 6 s | 1% |
+
+O cache de template é o que separa **1206 s de 482 s**: detecção de rosto e
+codificação no VAE custam ~724 s e acontecem **uma vez por template**. O
+segundo vídeo com o mesmo template pula as duas.
+
+`lipsync.batch_size` foi medido e **não muda nada em CPU**: 3,47 s por frame com
+lote 1 contra 3,40 s com lote 4, diferença dentro do ruído. Em CPU o torch já
+espalha o cálculo de uma amostra pelos 10 threads, então não sobra capacidade
+para o lote preencher. Fica em 1; com GPU, vale remedir.
+
+Os tempos por fase ficam gravados em `project.json` a cada execução, então
+comparar dois renders não depende de ninguém ter guardado o log do terminal.
 
 Com GPU NVIDIA, o instalador troca automaticamente para as wheels CUDA e o
 perfil de hardware passa a escolher os modelos maiores.

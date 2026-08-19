@@ -267,6 +267,8 @@ class MuseTalkEngine(LipSyncEngine):
             seconds_per_frame=float(data.get("seconds_per_frame", 0.0)),
             duration_seconds=result.duration_seconds,
             log_file=result.log_file,
+            phase_seconds=dict(data.get("phase_seconds") or {}),
+            batch_size=int(data.get("batch_size", 1)),
         )
 
     def clear_template_cache(self) -> int:

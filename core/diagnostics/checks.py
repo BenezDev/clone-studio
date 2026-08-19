@@ -474,6 +474,32 @@ def check_identity(report: DiagnosticsReport) -> None:
         )
     )
 
+    # A biblioteca de B-roll é opcional: vazia não é problema, e por isso o
+    # nível é INFO. Aparece aqui para quem ligou B-roll no roteiro descobrir a
+    # biblioteca vazia antes do render, e não depois de vinte minutos.
+    from services.video.broll import IMAGE_SUFFIXES, VIDEO_SUFFIXES
+
+    broll = (
+        [
+            f
+            for f in paths.broll_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in VIDEO_SUFFIXES | IMAGE_SUFFIXES
+        ]
+        if paths.broll_dir.exists()
+        else []
+    )
+    report.add(
+        Check(
+            name="Biblioteca de B-roll",
+            level=Level.OK if broll else Level.INFO,
+            summary=f"{len(broll)} asset(s)",
+            detail=str(paths.broll_dir),
+            hint="" if broll else
+            "Opcional. Só é necessária se alguma cena pedir B-roll no roteiro.",
+            group="identidade",
+        )
+    )
+
 
 # ---------------------------------------------------------------------------
 # Testes acionáveis (botões da página Diagnostics)

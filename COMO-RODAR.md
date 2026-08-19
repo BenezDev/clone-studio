@@ -307,6 +307,33 @@ Pela interface (**New Video**), ou pelo terminal:
 **Sempre faça o preview antes.** Ele gera 540×960 com os primeiros 10 segundos
 — serve para descobrir erro sem esperar o render inteiro.
 
+### Passo 4 — acabamento automático (opcional)
+
+Três recursos que ligam na página **New Video**, no passo *Edição*. Todos
+desligados por padrão, e nenhum deles mexe na sincronia labial: o vídeo está
+sincronizado quadro a quadro com o áudio, então nada remove tempo.
+
+| Recurso | O que faz | De onde vem |
+|---|---|---|
+| **Auto editor** | Fecha o enquadramento no rosto na frase que importa e abre quando ela acaba | Frases da transcrição e palavras enfatizadas do roteiro |
+| **Animações gráficas** | Card de hook na abertura, barra de progresso e end card no fim | O hook e o CTA que você escreveu no roteiro |
+| **B-roll** | Cobre a imagem por alguns segundos com um trecho de apoio | Sua biblioteca em `data/assets/broll/` |
+
+O plano de edição sai em `edit.json`, dentro da pasta do projeto: dá para abrir
+e conferir onde cada corte caiu e por quê, antes ou depois de renderizar.
+
+Para o B-roll funcionar, duas coisas: arquivos com **nomes descritivos** na
+biblioteca (`bitcoin_grafico_queda.mp4`, não `IMG_0421.mp4`), e o campo de
+B-roll preenchido na cena do roteiro. A busca casa as palavras do pedido com as
+do nome do arquivo. Sem pedido explícito, nada é inserido.
+
+Seu @ do lower third fica em `config/local.yaml`:
+
+```yaml
+editing:
+  handle: "@seu_usuario"
+```
+
 ---
 
 ## 8. Todos os comandos

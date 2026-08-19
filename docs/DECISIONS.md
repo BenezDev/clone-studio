@@ -520,3 +520,57 @@ ele não cabia no teto de cobertura — e num vídeo curto o primeiro corte já
 estoura o teto, então o roteiro que pediu apoio visual não recebia nenhum.
 Agora o trecho é encurtado para caber, e só é recusado se o que sobra fica
 abaixo do mínimo.
+
+---
+
+## D-025 · Medir antes de otimizar; o batch não ajuda em CPU (2026-08-19)
+
+**Contexto.** O lip-sync é 95% do render — 1206 s de 1262 s num vídeo de 4,9 s.
+Só duas fases eram medidas (landmarks e inferência) e elas somavam 857 s: quase
+um terço do tempo era invisível.
+
+**Primeiro instrumentar.** `_Timeline` cronometra todas as fases do worker, e os
+tempos voltam no resultado e ficam gravados em `project.json`. Comparar duas
+execuções deixou de depender de alguém ter guardado o log do terminal.
+
+**O que a medição mostrou** (cache de template quente):
+
+| Fase | Tempo | Fatia |
+|---|---|---|
+| Inferência | 423 s | 88% |
+| Carregar modelos | 27 s | 6% |
+| Recomposição | 26 s | 5% |
+| Áudio, template, montagem | 6 s | 1% |
+
+Os "350 s escuros" eram carregamento de modelo e recomposição. E o achado que
+mais muda o uso diário não era performance de código: **o cache de template
+separa 1206 s de 482 s**. Detecção de rosto e codificação no VAE custam ~724 s e
+rodam uma vez por template; do segundo vídeo em diante, some.
+
+**O batch não ajuda, e isso é o resultado.** A hipótese era que lotes maiores
+aproveitariam melhor o BLAS. Medido com as duas execuções isoladas, sem nada
+competindo por CPU:
+
+- `batch_size=1` → 3,47 s por frame
+- `batch_size=4` → 3,40 s por frame
+
+Diferença de 1,8%, dentro do ruído. Em CPU o torch já espalha o GEMM de **uma**
+amostra pelos 10 threads: não sobra capacidade ociosa para o lote preencher, ao
+contrário do que acontece em GPU. O padrão fica em 1, e o motivo está anotado no
+`default.yaml` — para a próxima pessoa não repetir a medição nem "otimizar" isso
+achando que ajuda. Com GPU, vale remedir.
+
+**Uma medição intermediária foi descartada por contaminação.** A primeira
+execução instrumentada deu 521 s de inferência, e as fases que *não* dependem de
+batch também apareceram infladas (recomposição 46 s contra 26 s). A causa era a
+suíte de testes rodando em paralelo. Comparar as duas teria produzido um ganho
+falso de 14% e uma mudança de padrão que não faz nada.
+
+**O que de fato mudou no código:** `torch.no_grad()` virou
+`torch.inference_mode()` na inferência — estritamente mais barato, mesmo
+resultado numérico. Não dá para atribuir a ele um número isolado com os dados
+que tenho, e por isso nenhum é reivindicado.
+
+**Verificado antes de mexer no padrão:** o `datagen` do upstream trata o último
+lote parcial, então mudar `batch_size` não descartaria frames em silêncio — o
+que encurtaria o vídeo e quebraria a sincronia com o áudio.

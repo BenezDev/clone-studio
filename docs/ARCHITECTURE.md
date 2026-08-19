@@ -256,14 +256,17 @@ descobrir o erro antes de esperar o render inteiro.
 
 ## O que ainda não existe
 
-- **Auto editor** (FASE 9): a `EditDecisionList` está desenhada, mas cortes,
-  punch-ins e inserção automática de B-roll ainda não estão implementados.
-- **Remotion** (FASE 10): animações gráficas, lower thirds, callouts.
-- **ComfyUI / Wan2.2** (FASE 11): o adapter `GenerativeVideoEngine` está
-  previsto; nesta máquina o módulo está desativado por falta de GPU.
+- **ComfyUI / Wan2.2** — B-roll generativo. O adapter existe e está desativado:
+  difusão de vídeo sem GPU dedicada levaria horas por segundo gerado. A
+  biblioteca local de B-roll cobre o mesmo papel de produção e funciona em CPU.
 - **Avatar generativo** (futuro): foto + áudio → movimento completo. Não bloqueia
   o MVP e depende de verificação de licença por engine.
-- **Busca semântica de B-roll**: hoje a referência é manual, por cena.
+- **Busca semântica de B-roll**: a busca atual casa palavras do pedido com as do
+  nome do arquivo. Índice semântico exigiria um modelo de embeddings — outro
+  peso, outro ambiente, mais RAM — e não se chama semântica enquanto não for.
+- **Corte que remove tempo**: impossível por construção. O vídeo está
+  lip-sincronizado quadro a quadro com o áudio; o auto editor corta
+  enquadramento, e o B-roll cobre a imagem. Ver `docs/DECISIONS.md`, D-022.
 
 Nenhum desses itens tem mock na implementação final. Onde a funcionalidade não
 existe, ela é declarada como ausente — na interface e nesta documentação.

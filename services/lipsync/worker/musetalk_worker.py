@@ -29,6 +29,7 @@ import shutil
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -137,6 +138,39 @@ def _prepare_repo(request: dict[str, Any]) -> Path:
 
     os.chdir(repo)
     return repo
+
+
+class _Timeline:
+    """Cronômetro por fase do lip-sync.
+
+    Existe porque a etapa leva vinte minutos em CPU e, até aqui, só duas fases
+    eram medidas: landmarks e inferência. Elas somavam 857s de 1206s — quase
+    um terço do tempo ficava invisível, e otimizar o que não se mede é chute.
+
+    Os tempos voltam no resultado do worker, então a diferença entre uma
+    execução e outra fica registrada no projeto em vez de sumir no terminal.
+    """
+
+    def __init__(self) -> None:
+        self.phases: dict[str, float] = {}
+
+    @contextmanager
+    def phase(self, name: str):
+        started = time.monotonic()
+        try:
+            yield
+        finally:
+            elapsed = time.monotonic() - started
+            self.phases[name] = round(self.phases.get(name, 0.0) + elapsed, 2)
+            emit_log(f"fase '{name}': {elapsed:.1f}s")
+
+    def summary(self) -> str:
+        total = sum(self.phases.values()) or 1.0
+        partes = sorted(self.phases.items(), key=lambda kv: kv[1], reverse=True)
+        return " · ".join(
+            f"{nome} {valor:.0f}s ({valor / total * 100:.0f}%)"
+            for nome, valor in partes
+        )
 
 
 def _configure_torch(request: dict[str, Any]):
@@ -443,50 +477,54 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
     result_dir.mkdir(parents=True, exist_ok=True)
     generated_dir.mkdir(parents=True, exist_ok=True)
 
+    timeline = _Timeline()
+
     # -- modelos ---------------------------------------------------------
     emit_progress(0.02, "Carregando modelos do MuseTalk…")
     weights = Path(request["weights_dir"])
-    vae, unet, pe = load_all_model(
-        unet_model_path=str(weights / "musetalkV15" / "unet.pth"),
-        vae_type="sd-vae",
-        unet_config=str(weights / "musetalkV15" / "musetalk.json"),
-        device=device,
-    )
-    timesteps = torch.tensor([0], device=device)
-
-    pe = pe.to(device)
-    vae.vae = vae.vae.to(device)
-    unet.model = unet.model.to(device)
-    weight_dtype = unet.model.dtype
-
-    whisper_dir = str(weights / "whisper")
-    audio_processor = AudioProcessor(feature_extractor_path=whisper_dir)
-    whisper = WhisperModel.from_pretrained(whisper_dir)
-    whisper = whisper.to(device=device, dtype=weight_dtype).eval()
-    whisper.requires_grad_(False)
-
-    face_parser = (
-        FaceParsing(
-            left_cheek_width=int(request.get("left_cheek_width", 90)),
-            right_cheek_width=int(request.get("right_cheek_width", 90)),
+    with timeline.phase("modelos"):
+        vae, unet, pe = load_all_model(
+            unet_model_path=str(weights / "musetalkV15" / "unet.pth"),
+            vae_type="sd-vae",
+            unet_config=str(weights / "musetalkV15" / "musetalk.json"),
+            device=device,
         )
-        if version == "v15"
-        else FaceParsing()
-    )
+        timesteps = torch.tensor([0], device=device)
+
+        pe = pe.to(device)
+        vae.vae = vae.vae.to(device)
+        unet.model = unet.model.to(device)
+        weight_dtype = unet.model.dtype
+
+        whisper_dir = str(weights / "whisper")
+        audio_processor = AudioProcessor(feature_extractor_path=whisper_dir)
+        whisper = WhisperModel.from_pretrained(whisper_dir)
+        whisper = whisper.to(device=device, dtype=weight_dtype).eval()
+        whisper.requires_grad_(False)
+
+        face_parser = (
+            FaceParsing(
+                left_cheek_width=int(request.get("left_cheek_width", 90)),
+                right_cheek_width=int(request.get("right_cheek_width", 90)),
+            )
+            if version == "v15"
+            else FaceParsing()
+        )
 
     # -- áudio -----------------------------------------------------------
     emit_progress(0.08, "Extraindo features de áudio (Whisper)…")
-    features, librosa_length = audio_processor.get_audio_feature(str(audio))
-    whisper_chunks = audio_processor.get_whisper_chunk(
-        features,
-        device,
-        weight_dtype,
-        whisper,
-        librosa_length,
-        fps=fps,
-        audio_padding_length_left=int(request.get("audio_padding_left", 2)),
-        audio_padding_length_right=int(request.get("audio_padding_right", 2)),
-    )
+    with timeline.phase("audio"):
+        features, librosa_length = audio_processor.get_audio_feature(str(audio))
+        whisper_chunks = audio_processor.get_whisper_chunk(
+            features,
+            device,
+            weight_dtype,
+            whisper,
+            librosa_length,
+            fps=fps,
+            audio_padding_length_left=int(request.get("audio_padding_left", 2)),
+            audio_padding_length_right=int(request.get("audio_padding_right", 2)),
+        )
     emit_log(f"{len(whisper_chunks)} chunks de áudio a {fps} fps")
 
     # Libera o Whisper: em CPU cada modelo residente custa RAM cara.
@@ -495,16 +533,17 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
     gc.collect()
 
     # -- template --------------------------------------------------------
-    frames = _extract_frames(video, frames_dir)
-    coord_list, latent_list = _preprocess_template(
-        frames,
-        cache_dir,
-        bbox_shift=bbox_shift,
-        extra_margin=extra_margin,
-        vae=vae,
-        version=version,
-    )
-    frame_list = [cv2.imread(f) for f in frames]
+    with timeline.phase("template"):
+        frames = _extract_frames(video, frames_dir)
+        coord_list, latent_list = _preprocess_template(
+            frames,
+            cache_dir,
+            bbox_shift=bbox_shift,
+            extra_margin=extra_margin,
+            vae=vae,
+            version=version,
+        )
+        frame_list = [cv2.imread(f) for f in frames]
 
     # Ida e volta: se o áudio for mais longo que o template, o vídeo reflete
     # em vez de dar um salto brusco ao voltar para o primeiro frame.
@@ -534,7 +573,7 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
     batches = int(np.ceil(len(valid_target_indices) / batch_size))
     generated = 0
 
-    with torch.no_grad():
+    with timeline.phase("inferencia"), torch.inference_mode():
         for index, (whisper_batch, latent_batch) in enumerate(generator):
             audio_features = pe(whisper_batch)
             latent_batch = latent_batch.to(dtype=unet.model.dtype)
@@ -575,6 +614,12 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
 
     # -- composição ------------------------------------------------------
     emit_progress(0.82, "Recompondo os frames no vídeo original…")
+    # `__enter__`/`__exit__` na mão em vez de `with`: o bloco cronometrado tem
+    # dezenas de linhas e reindentá-lo só para medir tempo traria mais risco de
+    # erro do que valor. Se algo estourar no meio, a fase não é registrada — e
+    # nesse caminho o relatório de tempos não é emitido de qualquer forma.
+    recompose_timer = timeline.phase("recomposicao")
+    recompose_timer.__enter__()
     written = 0
     generated_index = 0
     valid_targets = set(valid_target_indices)
@@ -623,8 +668,12 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
             error_type="no_output_frames",
         )
 
+    recompose_timer.__exit__(None, None, None)
+
     # -- montagem --------------------------------------------------------
     emit_progress(0.95, "Montando o vídeo…")
+    montagem = timeline.phase("montagem")
+    montagem.__enter__()
     output.parent.mkdir(parents=True, exist_ok=True)
     silent = work_dir / "silent.mp4"
 
@@ -672,20 +721,27 @@ def _action_process(request: dict[str, Any]) -> dict[str, Any]:
             error_type="ffmpeg_failed",
         )
 
+    montagem.__exit__(None, None, None)
+
     if request.get("cleanup", True):
         shutil.rmtree(frames_dir, ignore_errors=True)
         shutil.rmtree(result_dir, ignore_errors=True)
         shutil.rmtree(generated_dir, ignore_errors=True)
         silent.unlink(missing_ok=True)
 
+    emit_log(f"tempos: {timeline.summary()}")
     emit_progress(1.0, "Lip-sync concluído.")
     return {
         "output": str(output),
         "frames": written,
         "fps": fps,
+        "batch_size": batch_size,
         "seconds_per_frame": round(
             (time.monotonic() - started) / max(total_frames, 1), 3
         ),
+        # Os tempos por fase voltam para o host: comparar duas execuções deixa
+        # de depender de alguém ter guardado o log do terminal.
+        "phase_seconds": timeline.phases,
     }
 
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
@@ -32,6 +32,11 @@ class LipSyncResult:
     seconds_per_frame: float
     duration_seconds: float
     log_file: Path | None = None
+    # Tempo de cada fase interna do worker. Esta etapa domina o render — 95% do
+    # tempo total em CPU — e sem o detalhe por fase não dá para saber se uma
+    # execução ficou lenta por causa do modelo, do template ou da inferência.
+    phase_seconds: dict[str, float] = field(default_factory=dict)
+    batch_size: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -40,6 +45,8 @@ class LipSyncResult:
             "fps": self.fps,
             "seconds_per_frame": self.seconds_per_frame,
             "duration_seconds": self.duration_seconds,
+            "batch_size": self.batch_size,
+            "phase_seconds": self.phase_seconds,
         }
 
 

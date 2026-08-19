@@ -354,7 +354,7 @@ def stage_lipsync(ctx: PipelineContext) -> None:
     engine = MuseTalkEngine()
     started = time.monotonic()
     try:
-        engine.process(
+        resultado = engine.process(
             video_path=template_video,
             audio_path=audio,
             output_path=output,
@@ -385,6 +385,16 @@ def stage_lipsync(ctx: PipelineContext) -> None:
     project.record_stage(
         "lipsync", output=output, duration_seconds=time.monotonic() - started
     )
+    # O detalhe por fase fica no projeto. Esta etapa é 95% do render, e comparar
+    # duas execuções não pode depender de alguém ter guardado o log do terminal.
+    if resultado.phase_seconds:
+        project.engines["lipsync_phases"] = ", ".join(
+            f"{nome} {segundos:.0f}s"
+            for nome, segundos in sorted(
+                resultado.phase_seconds.items(), key=lambda kv: kv[1], reverse=True
+            )
+        )
+        ctx.emit(1.0, f"lip-sync por fase: {project.engines['lipsync_phases']}")
     project.save()
 
 

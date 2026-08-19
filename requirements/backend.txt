@@ -1,0 +1,18 @@
+# Ambiente do backend (.envs/backend) — Python 3.11+
+#
+# REGRA: nenhuma biblioteca de ML entra aqui. O backend orquestra workers em
+# ambientes isolados; se torch aparecer nesta lista, a arquitetura quebrou.
+# É isso que faz o FastAPI subir em menos de um segundo.
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+pydantic==2.13.4
+python-multipart==0.0.32
+PyYAML==6.0.3
+typer==0.27.1
+rich==15.0.0
+httpx==0.28.1
+psutil==7.2.0
+
+# Cliente de download dos pesos. Não puxa torch — é só HTTP + cache.
+huggingface_hub==0.36.0

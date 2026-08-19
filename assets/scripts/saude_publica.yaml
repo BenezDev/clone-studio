@@ -1,0 +1,192 @@
+# Saúde pública — conceitos consolidados, não aconselhamento médico.
+#
+# Critério de curadoria: só entra o que é consenso estabelecido em saúde
+# coletiva e epidemiologia. Nada de dose, diagnóstico, tratamento ou indicação
+# de medicamento — isso é conversa com profissional, não com vídeo curto.
+#
+# Todos carregam disclaimer, e ele aparece na interface antes de gerar.
+
+niche: saude_publica
+version: 1
+
+scripts:
+  - id: sau_imunidade_rebanho
+    title: Por que você se vacina por outra pessoa
+    preset: educacional
+    emotion: confident
+    tags: [vacina, epidemiologia]
+    disclaimer: Conteúdo informativo de saúde coletiva. Não substitui orientação de profissional de saúde.
+    hook: Tem gente que não pode tomar vacina. É por isso que você toma.
+    scenes:
+      - text: Existe gente que não pode se vacinar. Bebê muito novo, pessoa em quimioterapia, quem tem imunidade comprometida.
+      - text: Essas pessoas dependem de uma coisa só. Que o vírus não encontre por onde circular até chegar nelas.
+      - text: Quando a cobertura vacinal fica alta, a transmissão trava antes. Chama imunidade coletiva, e é proteção indireta.
+        emphasis: [indireta]
+      - text: O detalhe é que isso tem limiar. Sarampo, por exemplo, precisa de cobertura acima de noventa e cinco por cento porque é altíssimo contágio.
+      - text: Abaixo do limiar, a proteção coletiva simplesmente deixa de existir. E quem paga primeiro é quem não podia se vacinar.
+    cta: Confira sua carteira de vacinação. É de graça no posto.
+    caption: Imunidade coletiva protege quem não pode se vacinar. Mas só acima do limiar de cobertura.
+    hashtags: ["#saude", "#vacina", "#sus", "#saudepublica"]
+
+  - id: sau_antibiotico_virose
+    title: Antibiótico não trata gripe
+    preset: educacional
+    emotion: confident
+    tags: [antibiotico, resistencia]
+    disclaimer: Conteúdo informativo. Nunca inicie, troque ou interrompa medicamento sem orientação médica.
+    hook: Antibiótico não funciona em gripe. E tomar mesmo assim tem preço coletivo.
+    scenes:
+      - text: Antibiótico age em bactéria. Gripe, resfriado e a maioria das dores de garganta são vírus.
+        emphasis: [bactéria, vírus]
+      - text: Tomar antibiótico numa virose não acelera nada. O que melhora em três dias ia melhorar de qualquer jeito.
+      - text: E existe um custo que não é só seu. Cada uso desnecessário seleciona as bactérias que resistem ao remédio.
+      - text: Elas sobrevivem, se multiplicam, e o antibiótico deixa de funcionar quando alguém realmente precisar.
+      - text: A Organização Mundial da Saúde trata resistência antimicrobiana como uma das maiores ameaças à saúde global. Não é exagero de bula.
+    cta: Antibiótico só com prescrição, e o ciclo completo.
+    caption: Antibiótico age em bactéria, não em vírus. Uso desnecessário acelera a resistência.
+    hashtags: ["#saude", "#antibiotico", "#saudepublica"]
+
+  - id: sau_correlacao_causalidade
+    title: Como não cair em manchete de saúde
+    preset: educacional
+    emotion: confident
+    tags: [ciencia, metodo]
+    disclaimer: Conteúdo sobre leitura de evidência científica. Não substitui orientação profissional.
+    hook: '"Estudo diz que café causa X." Provavelmente o estudo não disse isso.'
+    scenes:
+      - text: Toda semana sai que um alimento causa ou previne alguma coisa. Quase sempre o estudo não disse isso.
+      - text: A maioria é estudo observacional. Ele encontra associação entre duas coisas, não relação de causa.
+        emphasis: [associação, causa]
+      - text: Exemplo clássico. Quem toma vinho vive mais. Só que quem toma vinho também costuma ter mais renda, mais acesso a médico e menos trabalho pesado.
+      - text: O que separa causa de coincidência é ensaio clínico randomizado, ou várias evidências independentes apontando junto.
+      - text: Três perguntas resolvem quase tudo. Quantas pessoas. Por quanto tempo. Comparado com o quê.
+    cta: Antes de mudar hábito, procure o estudo original.
+    caption: Estudo observacional mostra associação, não causa. Pergunte quantos, por quanto tempo, comparado a quê.
+    hashtags: ["#saude", "#ciencia", "#metodocientifico"]
+
+  - id: sau_sus_tamanho
+    title: O SUS é maior do que você imagina
+    preset: educacional
+    emotion: confident
+    tags: [sus, sistema]
+    disclaimer: Conteúdo informativo sobre o sistema público de saúde.
+    hook: Você provavelmente usou o SUS esta semana sem perceber.
+    scenes:
+      - text: Muita gente acha que só usa SUS quem vai ao posto. Mas o sistema é bem maior que atendimento.
+      - text: É o SUS que faz vigilância sanitária. Quem fiscaliza restaurante, água tratada e validade de remédio.
+      - text: É ele que controla o sangue dos hemocentros e coordena transplante. O Brasil tem um dos maiores programas públicos de transplante do mundo.
+        emphasis: [transplante]
+      - text: E é a rede que faz vacinação de massa, controle de epidemia e distribuição de medicamento de alto custo.
+      - text: Ou seja, mesmo quem só usa plano de saúde depende do SUS todo dia. Só não vê.
+    cta: Vigilância sanitária, sangue e transplante também são SUS.
+    caption: 'O SUS vai muito além do posto: vigilância, sangue, transplante e vacinação de massa.'
+    hashtags: ["#sus", "#saude", "#saudepublica", "#brasil"]
+
+  - id: sau_natural_seguro
+    title: Natural não quer dizer seguro
+    preset: educacional
+    emotion: confident
+    tags: [fitoterapico, risco]
+    disclaimer: Conteúdo informativo. Consulte profissional antes de usar qualquer produto, natural ou não.
+    hook: Cianeto é natural. Veneno de cobra também.
+    scenes:
+      - text: Cianeto é natural. Veneno de cobra é natural. Natural nunca foi sinônimo de seguro.
+        emphasis: [natural, seguro]
+      - text: Planta medicinal tem princípio ativo, e princípio ativo tem dose, tem efeito colateral e tem interação com outros remédios.
+      - text: A diferença é que o remédio de farmácia passou por ensaio, tem bula e tem dose padronizada. O chá não tem nada disso.
+      - text: E tem um risco específico. Interação. Erva de São João, por exemplo, reduz o efeito de vários medicamentos, incluindo anticoncepcional.
+      - text: A pergunta certa nunca é se é natural. É se foi testado, em quanta gente, e como interage com o que você já toma.
+    cta: Avise seu médico sobre chá e suplemento que você usa.
+    caption: Natural não é sinônimo de seguro. O que importa é dose, evidência e interação.
+    hashtags: ["#saude", "#fitoterapico", "#ciencia"]
+
+  - id: sau_ensaio_clinico
+    title: Como um remédio é aprovado
+    preset: educacional
+    emotion: neutral
+    tags: [ensaio, regulacao]
+    disclaimer: Conteúdo informativo sobre pesquisa clínica.
+    hook: Entre a descoberta e a farmácia existem quatro fases. Quase tudo morre no caminho.
+    scenes:
+      - text: Entre descobrir uma molécula e ela chegar na farmácia existem quatro fases. A maioria não passa.
+      - text: A fase um testa segurança em poucas dezenas de pessoas. A pergunta é só uma. Faz mal?
+      - text: A fase dois testa se funciona, em algumas centenas. A fase três compara com o tratamento atual, em milhares.
+        emphasis: [compara]
+      - text: A fase três é a que separa remédio de promessa, porque tem grupo de controle e ninguém sabe quem tomou o quê.
+      - text: E a fase quatro acontece depois da aprovação, monitorando efeito raro que só aparece com muita gente usando.
+    cta: Quando ler sobre "cura", pergunte em que fase está.
+    caption: Quatro fases de ensaio clínico. A fase três é a que compara com o tratamento existente.
+    hashtags: ["#saude", "#ciencia", "#pesquisa"]
+
+  - id: sau_saude_mental
+    title: Tristeza e depressão não são a mesma coisa
+    preset: educacional
+    emotion: warm
+    speed: 0.98
+    tags: [saudemental]
+    disclaimer: Conteúdo informativo. Se você está em sofrimento, procure ajuda profissional. No Brasil, o CVV atende no 188, 24 horas, gratuito.
+    hook: Tristeza tem motivo e passa. Depressão não precisa de motivo e não passa sozinha.
+    scenes:
+      - text: Tristeza é emoção. Ela tem gatilho, tem duração e responde a coisa boa acontecendo.
+      - text: Depressão é transtorno. Ela pode não ter motivo aparente, dura semanas ou meses, e não melhora porque algo bom aconteceu.
+        emphasis: [transtorno]
+      - text: E ela não é só humor. Afeta sono, apetite, concentração e energia. Muita gente procura ajuda por cansaço, sem associar.
+      - text: Falar "reage" para quem está em depressão é como falar "enxerga" para quem tem miopia. O problema não está na vontade.
+      - text: Tem tratamento, funciona, e quanto antes começa, melhor o resultado.
+    cta: CVV, 188. Ligação gratuita, 24 horas.
+    caption: Tristeza tem motivo e passa. Depressão é transtorno, afeta sono e energia, e tem tratamento.
+    hashtags: ["#saudemental", "#saude", "#cvv"]
+
+  - id: sau_prevencao_custo
+    title: Por que prevenir custa menos que tratar
+    preset: educacional
+    emotion: confident
+    tags: [prevencao, economia]
+    disclaimer: Conteúdo informativo de saúde coletiva.
+    hook: Todo real em atenção básica economiza vários no hospital. E ainda assim é o primeiro corte.
+    scenes:
+      - text: Existe uma lógica em saúde pública que parece óbvia e mesmo assim é a primeira a ser cortada.
+      - text: Diagnosticar hipertensão no posto custa pouco. Tratar o AVC que ela causa custa UTI, cirurgia e reabilitação.
+        emphasis: [UTI]
+      - text: A mesma conta vale para pré-natal, vacinação e rastreio de câncer. Todos são baratos perto do que evitam.
+      - text: O problema é político, não técnico. Prevenção não tem foto de inauguração e o resultado aparece depois do mandato.
+      - text: Por isso atenção básica é onde mais rende investir e onde menos se investe.
+    cta: Consulta de rotina é a intervenção mais barata que existe.
+    caption: Atenção básica é o investimento de maior retorno em saúde e o primeiro a ser cortado.
+    hashtags: ["#saudepublica", "#sus", "#prevencao"]
+
+  - id: sau_automedicacao
+    title: O risco real da automedicação
+    preset: educacional
+    emotion: confident
+    tags: [medicamento, risco]
+    disclaimer: Conteúdo informativo. Não inicie nem interrompa medicamento por conta própria.
+    hook: O perigo da automedicação não é a dose. É o que ela esconde.
+    scenes:
+      - text: Quando se fala em automedicação, todo mundo pensa em overdose. O risco mais comum é outro.
+      - text: É mascarar sintoma. Analgésico tira a dor sem tratar a causa, e a causa continua evoluindo em silêncio.
+        emphasis: [silêncio]
+      - text: Tem também a interação. Anti-inflamatório com anticoagulante aumenta risco de sangramento, e as duas caixas parecem inofensivas.
+      - text: E tem a dose repetida sem perceber. Vários remédios de gripe têm o mesmo princípio ativo, e somar dois passa do limite do fígado.
+      - text: Ler o princípio ativo, e não só o nome comercial, evita boa parte disso.
+    cta: Leia o princípio ativo, não só o nome da caixa.
+    caption: O maior risco da automedicação é mascarar sintoma e somar princípio ativo sem perceber.
+    hashtags: ["#saude", "#medicamento", "#saudepublica"]
+
+  - id: sau_agua_saneamento
+    title: Saneamento é a maior intervenção de saúde da história
+    preset: educacional
+    emotion: confident
+    tags: [saneamento, historia]
+    disclaimer: Conteúdo informativo de saúde coletiva.
+    hook: A intervenção que mais salvou vidas na história não foi remédio. Foi encanamento.
+    scenes:
+      - text: Se você tivesse que apontar a intervenção que mais salvou vidas na história, não seria um remédio. Seria água tratada e esgoto.
+        emphasis: [água, esgoto]
+      - text: O marco foi Londres, em mil oitocentos e cinquenta e quatro. John Snow mapeou uma epidemia de cólera até uma bomba de água específica.
+      - text: Isso mudou o entendimento da doença e fundou a epidemiologia moderna.
+      - text: Hoje diarreia por água contaminada ainda mata criança em escala. E é totalmente evitável com infraestrutura.
+      - text: No Brasil, milhões de pessoas seguem sem coleta de esgoto. Isso aparece na fila do hospital, não só na estatística.
+    cta: Saneamento é política de saúde, não só obra.
+    caption: Água tratada e esgoto salvaram mais vidas que qualquer medicamento.
+    hashtags: ["#saneamento", "#saudepublica", "#historia"]

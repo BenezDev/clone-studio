@@ -1,0 +1,33 @@
+# Ambiente do MuseTalk (.envs/musetalk) — EXIGE Python 3.10
+#
+# Por que 3.10 e não a versão do sistema:
+#   * torch 2.0.1 não publica wheels para cp312;
+#   * numpy 1.23.5 (exigido pelo stack MMLab) também não;
+#   * mmcv 2.0.1 só tem wheel pré-compilada para cp310/cp311.
+# Compilar mmcv do zero levaria dezenas de minutos e falha com frequência.
+# Por isso o install.sh provisiona um CPython 3.10 isolado via `uv`, sem tocar
+# no Python do sistema.
+#
+# torch/torchvision são instalados separadamente pelo install.sh a partir do
+# índice correto (cpu ou cu118), porque a URL do índice não cabe aqui.
+#
+# Omitidos de propósito em relação ao requirements.txt oficial do MuseTalk:
+#   tensorflow/tensorboard -> usados apenas no treino; ~600 MB inúteis aqui
+#   gradio                 -> a interface é a nossa
+#   moviepy                -> o projeto usa FFmpeg diretamente
+#   gdown                  -> download de pesos é feito por scripts/models.py
+
+numpy==1.23.5
+diffusers==0.30.2
+accelerate==0.28.0
+transformers==4.39.2
+huggingface_hub==0.30.2
+opencv-python==4.9.0.80
+soundfile==0.12.1
+librosa==0.11.0
+einops==0.8.1
+omegaconf==2.3.0
+ffmpeg-python==0.2.0
+imageio[ffmpeg]==2.34.2
+tqdm==4.67.1
+requests==2.32.3

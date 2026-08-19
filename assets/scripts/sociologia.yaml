@@ -1,0 +1,179 @@
+# Sociologia — conceitos consolidados da disciplina.
+#
+# Critério de curadoria: conceito com nome, autor e literatura por trás.
+# Não entra opinião política disfarçada de teoria. Quando o conceito tem
+# leitura em disputa, o roteiro diz que tem.
+
+niche: sociologia
+version: 1
+
+scripts:
+  - id: soc_profecia_autorrealizavel
+    title: 'Profecia autorrealizável: quando acreditar faz acontecer'
+    preset: educacional
+    emotion: confident
+    tags: [merton, estereotipo]
+    hook: Um boato falso sobre um banco pode quebrar o banco. E o boato vira verdade.
+    scenes:
+      - text: Em mil novecentos e quarenta e oito, Robert Merton descreveu um mecanismo que explica desde crise bancária até desempenho escolar.
+      - text: Chama profecia autorrealizável. Uma definição falsa da situação provoca um comportamento que torna a definição verdadeira.
+        emphasis: [falsa, verdadeira]
+      - text: O exemplo dele foi um banco saudável. Espalha-se o boato de que vai quebrar, todo mundo corre para sacar, e o banco quebra de verdade.
+      - text: Na educação aparece assim. O professor acredita que certo aluno rende menos, dá menos atenção e menos desafio, e o aluno rende menos.
+      - text: O ponto incômodo é que no fim parece que a previsão estava certa. E ninguém percebe que ela se causou.
+    cta: Repare em quantas "confirmações" você mesmo produziu.
+    caption: 'Profecia autorrealizável, de Merton: uma crença falsa gera o comportamento que a torna verdadeira.'
+    hashtags: ["#sociologia", "#comportamento", "#educacao"]
+
+  - id: soc_capital_social
+    title: Por que quem conhece gente consegue emprego
+    preset: educacional
+    emotion: confident
+    tags: [granovetter, redes]
+    hook: A maioria das vagas boas nunca é anunciada. Isso tem nome e tem estudo.
+    scenes:
+      - text: Boa parte das vagas nunca chega a ser anunciada. Isso não é conspiração, é como rede social funciona. E tem estudo desde os anos setenta.
+      - text: Mark Granovetter mostrou uma coisa contraintuitiva. Quem mais ajuda a arrumar emprego não é o amigo próximo. É o conhecido distante.
+        emphasis: [distante]
+      - text: A lógica é de informação. Seu amigo próximo circula nos mesmos lugares que você, então sabe das mesmas vagas. O conhecido distante traz informação nova.
+      - text: Ele chamou isso de força dos laços fracos. E é um dos artigos mais citados da sociologia.
+      - text: A consequência desconfortável é que quem nasce numa rede pequena tem menos acesso à informação, não menos capacidade.
+    cta: Seus laços fracos valem mais do que você imagina.
+    caption: A força dos laços fracos, de Granovetter — o conhecido distante traz a informação que o amigo próximo não tem.
+    hashtags: ["#sociologia", "#carreira", "#redes"]
+
+  - id: soc_bolha_algoritmica
+    title: Sua timeline não mostra o mundo
+    preset: educacional
+    emotion: confident
+    tags: [algoritmo, midia]
+    hook: O algoritmo não te mostra o que é importante. Te mostra o que te segura.
+    scenes:
+      - text: O algoritmo não foi feito para te informar. Foi feito para te manter na tela. São objetivos diferentes.
+        emphasis: [tela]
+      - text: E o que segura atenção é o que gera reação. Indignação retém mais que nuance, então indignação é distribuída mais.
+      - text: Com o tempo isso cria duas ilusões. A de que sua opinião é maioria, porque você só vê ela. E a de que quem discorda é extremo, porque você só vê o pior lado.
+      - text: Eli Pariser chamou de bolha dos filtros. E a pesquisa depois mostrou que é mais complicado, porque a gente também escolhe a própria bolha.
+      - text: Ou seja, não é só o algoritmo. É ele somado ao nosso hábito de fugir do desconforto.
+    cta: Siga de propósito alguém competente que discorda de você.
+    caption: Algoritmo otimiza retenção, não informação. E nós ajudamos, evitando desconforto.
+    hashtags: ["#sociologia", "#algoritmo", "#redessociais"]
+
+  - id: soc_desigualdade_pobreza
+    title: Desigualdade e pobreza não são a mesma coisa
+    preset: educacional
+    emotion: neutral
+    tags: [desigualdade, indicadores]
+    hook: Um país pode reduzir pobreza e aumentar desigualdade ao mesmo tempo.
+    scenes:
+      - text: Pobreza e desigualdade são medidas diferentes, e confundir as duas atrapalha qualquer discussão.
+      - text: Pobreza é medida absoluta. Quantas pessoas estão abaixo de uma linha de renda ou de acesso.
+      - text: Desigualdade é medida relativa. Como a renda se distribui entre todos, geralmente pelo índice de Gini.
+        emphasis: [relativa]
+      - text: Dá para reduzir pobreza e aumentar desigualdade ao mesmo tempo. Basta os mais pobres melhorarem pouco e o topo melhorar muito.
+      - text: Por isso os dois indicadores aparecem juntos em análise séria. Um sozinho conta metade da história.
+    cta: Quando ler sobre economia, procure os dois números.
+    caption: Pobreza é absoluta, desigualdade é relativa. Os dois podem se mover em direções opostas.
+    hashtags: ["#sociologia", "#economia", "#desigualdade"]
+
+  - id: soc_trabalho_invisivel
+    title: O trabalho que não entra no PIB
+    preset: educacional
+    emotion: confident
+    tags: [genero, trabalho, cuidado]
+    hook: Existe um trabalho que sustenta a economia inteira e não é contado como trabalho.
+    scenes:
+      - text: Cuidar de criança, de idoso, cozinhar, limpar e organizar a casa. Isso é trabalho, e não entra na conta do PIB.
+      - text: Não entra porque a contabilidade nacional mede o que é trocado por dinheiro. O que é feito sem pagamento fica fora.
+        emphasis: [fora]
+      - text: Pesquisas de uso do tempo, inclusive do IBGE, mostram que essa carga recai de forma bem desigual entre homens e mulheres.
+      - text: E isso tem efeito direto em carreira. Quem faz o trabalho de cuidado tem menos horas disponíveis para trabalho pago, e isso aparece no salário e na aposentadoria.
+      - text: O nome disso na literatura é economia do cuidado. E medir é o primeiro passo para discutir.
+    cta: Some as horas de cuidado da sua casa. É trabalho.
+    caption: Trabalho de cuidado sustenta a economia e não entra no PIB porque não é pago.
+    hashtags: ["#sociologia", "#trabalho", "#economia"]
+
+  - id: soc_mobilidade_social
+    title: Quanto tempo leva para uma família mudar de vida
+    preset: educacional
+    emotion: neutral
+    tags: [mobilidade, dados]
+    hook: A pergunta não é se dá para subir. É quantas gerações leva.
+    scenes:
+      - text: A discussão sobre esforço costuma travar porque as pessoas comparam casos individuais. Mobilidade social se mede em população.
+      - text: A pergunta técnica é outra. Quantas gerações uma família na base leva para chegar à renda média do país.
+      - text: A OCDE calcula isso. E a resposta varia muito entre países, o que já mostra que não é só característica individual.
+        emphasis: [varia]
+      - text: Onde a mobilidade é maior, três coisas aparecem juntas. Educação pública de qualidade, saúde acessível e tributação menos concentrada na base.
+      - text: Isso não anula o esforço individual. Mostra que o mesmo esforço rende diferente dependendo de onde você nasce.
+    cta: Mobilidade se mede em gerações, não em anedotas.
+    caption: Mobilidade social é medida em gerações. O mesmo esforço rende diferente conforme o país.
+    hashtags: ["#sociologia", "#desigualdade", "#dados"]
+
+  - id: soc_anomia
+    title: 'Anomia: quando a regra deixa de fazer sentido'
+    preset: educacional
+    emotion: neutral
+    tags: [durkheim, teoria]
+    hook: Durkheim descobriu que crise econômica aumenta suicídio. E que crescimento rápido também.
+    scenes:
+      - text: No fim do século dezenove, Émile Durkheim estudou dados de suicídio na Europa e achou um padrão que não esperava.
+      - text: A taxa subia em crise econômica. Isso era intuitivo. Mas subia também em períodos de enriquecimento rápido.
+        emphasis: [enriquecimento]
+      - text: A explicação dele foi que os dois casos têm algo em comum. A mudança brusca quebra as referências que orientam a expectativa das pessoas.
+      - text: Ele chamou isso de anomia. Não é ausência de lei, é ausência de norma compartilhada que faça sentido.
+      - text: É um dos primeiros trabalhos a mostrar que um ato aparentemente individual tem padrão social mensurável.
+    cta: Anomia não é caos. É perda de referência compartilhada.
+    caption: Durkheim e a anomia — mudança social brusca desorienta, tanto na crise quanto na prosperidade.
+    hashtags: ["#sociologia", "#durkheim", "#teoria"]
+
+  - id: soc_habitus
+    title: Por que gosto também é classe
+    preset: educacional
+    emotion: confident
+    tags: [bourdieu, cultura]
+    hook: Seu gosto parece pessoal. Bourdieu mostrou que ele tem endereço.
+    scenes:
+      - text: Você acha que seu gosto por música, comida e roupa é escolha pessoal. Pierre Bourdieu mostrou que ele é bem previsível.
+      - text: Ele pesquisou gosto na França e encontrou correlação forte com origem social e escolaridade. Não é coincidência, é socialização.
+      - text: O conceito central é habitus. São disposições que você aprende tão cedo que parecem natureza, não aprendizado.
+        emphasis: [natureza]
+      - text: E existe capital cultural. Saber se portar num certo ambiente, reconhecer referências, falar de um jeito. Isso abre porta como diploma abre.
+      - text: A crítica ao trabalho dele é que seria determinista demais. Mas a ideia central se sustentou. Gosto não é só individual.
+    cta: Repare de onde vieram seus gostos "naturais".
+    caption: Habitus e capital cultural, de Bourdieu — gosto é socialmente construído e abre portas.
+    hashtags: ["#sociologia", "#bourdieu", "#cultura"]
+
+  - id: soc_estigma
+    title: Como um rótulo muda uma pessoa
+    preset: educacional
+    emotion: confident
+    tags: [goffman, estigma]
+    hook: O rótulo não descreve a pessoa. Ele começa a fabricar ela.
+    scenes:
+      - text: Erving Goffman estudou o que acontece quando alguém carrega uma marca socialmente desvalorizada. Ele chamou de estigma.
+      - text: O ponto dele é que o estigma não está na pessoa. Está na relação. É a sociedade que define qual característica desqualifica.
+        emphasis: [relação]
+      - text: E o efeito é prático. A pessoa passa a administrar a informação sobre si o tempo todo. O que contar, o que esconder, de quem.
+      - text: Isso consome energia que os outros usam para viver. Chama trabalho de manejo do estigma.
+      - text: Junto com a teoria da rotulação, explica por que punir alguém publicamente muitas vezes empurra ela ainda mais para o comportamento punido.
+    cta: Rótulo não descreve. Ele produz.
+    caption: Estigma, de Goffman — a marca não está na pessoa, está na relação social.
+    hashtags: ["#sociologia", "#goffman", "#comportamento"]
+
+  - id: soc_meritocracia
+    title: A origem irônica da palavra meritocracia
+    preset: educacional
+    emotion: confident
+    tags: [meritocracia, historia]
+    hook: A palavra meritocracia foi criada para criticar a ideia. Virou elogio por engano.
+    scenes:
+      - text: A palavra meritocracia apareceu em mil novecentos e cinquenta e oito, num livro do sociólogo Michael Young. E era sátira.
+        emphasis: [sátira]
+      - text: Ele imaginou uma sociedade futura que distribui posição por mérito medido. E mostrou o problema.
+      - text: Numa sociedade assim, quem fica embaixo não tem mais desculpa nem solidariedade. O sistema diz que ele merece estar ali.
+      - text: Young escreveu depois, já idoso, lamentando que o termo tinha virado elogio. Era exatamente o oposto do que ele quis dizer.
+      - text: A crítica não é ao mérito. É à ideia de que o ponto de partida é igual, quando a pesquisa mostra que não é.
+    cta: A palavra nasceu como alerta, não como ideal.
+    caption: Michael Young criou "meritocracia" em 1958 como sátira. Virou elogio por engano.
+    hashtags: ["#sociologia", "#meritocracia", "#historia"]

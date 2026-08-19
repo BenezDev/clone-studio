@@ -1,0 +1,187 @@
+# Roteiros de política — institucionais e apartidários.
+#
+# Critério de curadoria: só entra o que é verificável na Constituição, no
+# regimento das casas legislativas ou em dado oficial. Nada de opinião sobre
+# partido, governo ou candidato — isso envelhece mal, divide audiência por
+# motivo errado e não é papel de um roteiro pronto.
+#
+# O ângulo viral aqui é "a maioria não sabe como isso funciona", que é
+# verdade e não exige tomar lado.
+
+niche: politica
+version: 1
+
+scripts:
+  - id: pol_voto_deputado
+    title: Seu voto para deputado não funciona como você pensa
+    preset: educacional
+    emotion: confident
+    speed: 1.05
+    tags: [eleicao, quociente, camara]
+    hook: Você votou num deputado e ele não se elegeu. Mas seu voto elegeu outro.
+    scenes:
+      - text: Você votou num deputado e ele não se elegeu. Mas o seu voto elegeu outro. E não é fraude, é a regra.
+        emphasis: [fraude, regra]
+      - text: Deputado no Brasil é eleito por quociente. Primeiro somam todos os votos do partido ou da federação. Depois dividem pelo número de cadeiras.
+      - text: Se o partido alcança o quociente, ele ganha as vagas. E quem ocupa essas vagas são os mais votados de dentro daquele partido.
+      - text: Por isso um candidato com muito voto puxa colega de legenda junto. E por isso um candidato bem votado às vezes fica de fora, porque o partido dele não bateu o quociente.
+        emphasis: [puxa, fora]
+      - text: Traduzindo. Quando você vota em deputado, você está votando em duas coisas ao mesmo tempo. Na pessoa e no partido dela.
+    cta: Antes da próxima eleição, veja em qual partido seu candidato está.
+    caption: O voto para deputado é proporcional, não majoritário. Entender isso muda como você escolhe.
+    hashtags: ["#politica", "#eleicoes", "#cidadania", "#brasil"]
+
+  - id: pol_o_que_faz_vereador
+    title: O que um vereador faz de verdade
+    preset: educacional
+    emotion: confident
+    tags: [municipal, camara, vereador]
+    hook: O vereador não asfalta rua. E é por isso que você cobra a pessoa errada.
+    scenes:
+      - text: O vereador não asfalta rua, não constrói posto de saúde e não contrata professor. E mesmo assim é ele que todo mundo cobra.
+        emphasis: [errada]
+      - text: Quem executa obra é a prefeitura. O vereador faz outras três coisas, e as três mexem no seu dia.
+      - text: Ele vota o orçamento da cidade, ou seja, decide para onde vai o dinheiro. Ele cria e muda leis municipais, do plano diretor ao horário do comércio.
+      - text: E ele fiscaliza o prefeito. É a câmara que aprova as contas, abre investigação e pode até cassar.
+        emphasis: [fiscaliza]
+      - text: Ou seja, o cargo que menos aparece é o que mais define o que a prefeitura consegue fazer.
+    cta: Procure o nome do seu vereador. Aposto que você não sabe.
+    caption: Vereador não executa obra. Ele decide orçamento, faz lei e fiscaliza o prefeito.
+    hashtags: ["#politica", "#vereador", "#cidadania", "#municipio"]
+
+  - id: pol_pec_pl_mp
+    title: PEC, PL e MP não são a mesma coisa
+    preset: educacional
+    emotion: neutral
+    tags: [legislativo, constituicao]
+    hook: Três siglas aparecem no jornal todo dia. A diferença entre elas decide o país.
+    scenes:
+      - text: PEC, PL e MP aparecem no jornal todo dia. Parecem sinônimo. Não são, e a diferença decide o que passa e o que não passa.
+      - text: PL é projeto de lei. Maioria simples nas duas casas e vai para sanção do presidente. É o caminho normal.
+      - text: PEC é proposta de emenda à Constituição. Precisa de três quintos, em dois turnos, na câmara e no senado. É de propósito que é difícil.
+        emphasis: [difícil]
+      - text: MP é medida provisória. O presidente edita e ela vale na hora. Mas caduca se o congresso não aprovar dentro do prazo.
+      - text: Então quando alguém diz que uma proposta vai passar rápido, olhe a sigla primeiro. Ela já te diz quase tudo.
+    cta: Da próxima vez que ler uma manchete, procure a sigla.
+    caption: PL é lei comum. PEC muda a Constituição. MP vale na hora e pode caducar.
+    hashtags: ["#politica", "#congresso", "#leis", "#brasil"]
+
+  - id: pol_orcamento_publico
+    title: De onde vem e para onde vai o dinheiro público
+    preset: educacional
+    emotion: confident
+    tags: [orcamento, impostos]
+    hook: O governo não tem dinheiro. Ele tem o seu.
+    scenes:
+      - text: O governo não tem dinheiro próprio. Ele tem o seu. E o caminho desse dinheiro é mais engessado do que parece.
+      - text: A maior parte do orçamento é obrigatória. Aposentadoria, salário de servidor, saúde e educação têm piso definido em lei.
+      - text: O que sobra para escolher livremente é uma fatia pequena. É por isso que governo nenhum consegue mudar tudo num ano.
+        emphasis: [pequena]
+      - text: E o orçamento não é feito pelo presidente sozinho. Ele propõe, o congresso altera, e emenda parlamentar entra no meio.
+      - text: Quem entende essa disputa entende por que promessa de campanha some depois da posse.
+    cta: Procure o orçamento da sua cidade. É público.
+    caption: A maior parte do orçamento é obrigatória por lei. A margem de escolha é menor do que se imagina.
+    hashtags: ["#politica", "#orcamento", "#impostos", "#transparencia"]
+
+  - id: pol_cpi
+    title: Como funciona uma CPI
+    preset: educacional
+    emotion: confident
+    tags: [congresso, investigacao]
+    hook: Uma CPI tem poder de juiz. E quase ninguém sabe disso.
+    scenes:
+      - text: Comissão parlamentar de inquérito tem poder de investigação próprio de autoridade judicial. Está na Constituição.
+        emphasis: [judicial]
+      - text: Ela pode quebrar sigilo bancário e fiscal, convocar testemunha e determinar perícia. Sem pedir para juiz nenhum.
+      - text: Mas ela não pode tudo. Não pode prender, salvo em flagrante, não pode condenar e não pode determinar busca em domicílio.
+      - text: Para abrir, precisa de assinatura de um terço dos parlamentares, fato determinado e prazo definido.
+      - text: No fim, a CPI produz um relatório. Quem processa é o Ministério Público. A CPI expõe, ela não julga.
+        emphasis: [expõe, julga]
+    cta: CPI investiga e expõe. Punir é com a Justiça.
+    caption: CPI tem poder de investigação de juiz, mas não pode condenar nem prender.
+    hashtags: ["#politica", "#cpi", "#congresso", "#cidadania"]
+
+  - id: pol_segundo_turno
+    title: Por que existe segundo turno
+    preset: educacional
+    emotion: neutral
+    tags: [eleicao, sistema]
+    hook: Segundo turno não existe para dar mais emoção. Existe para resolver um problema real.
+    scenes:
+      - text: Segundo turno não existe para dar emoção. Existe para resolver um problema matemático.
+      - text: Com muitos candidatos, dá para vencer com trinta por cento dos votos. Ou seja, setenta por cento das pessoas votaram contra.
+        emphasis: [contra]
+      - text: O segundo turno força o vencedor a construir maioria de verdade. Ele precisa conversar com quem não votou nele.
+      - text: Vale para presidente, governador e prefeito de cidade com mais de duzentos mil eleitores.
+      - text: Por isso a segunda campanha muda de tom. Não é fingimento. É a regra pedindo isso.
+    cta: Reparou como o discurso muda no segundo turno? Agora você sabe por quê.
+    caption: Segundo turno garante que o eleito tenha maioria real, não só a maior minoria.
+    hashtags: ["#politica", "#eleicoes", "#democracia"]
+
+  - id: pol_stf_escolhe
+    title: Como o STF decide o que vai julgar
+    preset: educacional
+    emotion: neutral
+    tags: [judiciario, stf]
+    hook: O Supremo não julga tudo que chega. E quem escolhe muda o país.
+    scenes:
+      - text: O Supremo recebe dezenas de milhares de processos por ano. Ele não julga nem perto disso.
+      - text: Para um recurso chegar ao plenário, precisa ter repercussão geral. Ou seja, precisa importar além das partes envolvidas.
+      - text: E a pauta do plenário é definida pela presidência da corte. Decidir o que entra na pauta já é uma decisão de poder.
+        emphasis: [pauta, poder]
+      - text: Tem ainda a decisão monocrática, quando um ministro sozinho decide. Depois isso vai a referendo do plenário.
+      - text: Entender esse funil explica por que um tema fica anos parado e outro é julgado em semanas.
+    cta: Repercussão geral é o filtro. Vale conhecer o termo.
+    caption: O STF filtra por repercussão geral, e a pauta é escolhida pela presidência.
+    hashtags: ["#politica", "#stf", "#justica", "#brasil"]
+
+  - id: pol_emenda_parlamentar
+    title: O que é emenda parlamentar
+    preset: educacional
+    emotion: confident
+    tags: [orcamento, congresso]
+    hook: Existe um dinheiro do orçamento que o deputado escolhe sozinho onde vai.
+    scenes:
+      - text: Existe uma parte do orçamento em que o parlamentar aponta o destino. Chama emenda parlamentar.
+      - text: A lógica original é boa. Quem é eleito por uma região conhece a necessidade daquela região melhor que Brasília.
+      - text: Parte dessas emendas é impositiva. Ou seja, o governo é obrigado a pagar, não é favor.
+        emphasis: [obrigado]
+      - text: O problema aparece na transparência. Quando não dá para rastrear quem indicou o quê, some a possibilidade de cobrar.
+      - text: Emenda em si não é desvio. O que define é se dá para saber quem pediu e o que foi entregue.
+    cta: Emendas do seu estado são públicas. Vale procurar.
+    caption: Emenda parlamentar direciona orçamento. O ponto crítico é a rastreabilidade.
+    hashtags: ["#politica", "#orcamento", "#transparencia", "#congresso"]
+
+  - id: pol_federacao_partidaria
+    title: Por que os partidos se juntaram
+    preset: educacional
+    emotion: neutral
+    tags: [partidos, eleicao]
+    hook: Partidos rivais viraram parceiros. Não foi amor, foi conta.
+    scenes:
+      - text: Partidos que se atacavam viraram parceiros formais. Não foi reconciliação. Foi cálculo.
+      - text: A cláusula de barreira criou um piso. Partido que não alcança certo percentual perde acesso ao fundo partidário e ao tempo de TV.
+        emphasis: [piso]
+      - text: A federação permite que legendas somem votos e atuem como um partido só. Mas com uma amarra, elas ficam presas por no mínimo quatro anos.
+      - text: Isso é diferente da antiga coligação, que acabava no dia seguinte à eleição.
+      - text: Ou seja, o desenho da regra mudou o comportamento. Que é o que boa regra faz.
+    cta: Federação dura quatro anos. Coligação durava um dia.
+    caption: Cláusula de barreira empurrou partidos pequenos a se federar por no mínimo quatro anos.
+    hashtags: ["#politica", "#partidos", "#eleicoes"]
+
+  - id: pol_voto_secreto_urna
+    title: Por que a urna não tem impressão do voto
+    preset: educacional
+    emotion: confident
+    tags: [urna, eleicao, seguranca]
+    hook: A discussão sobre imprimir o voto esbarra num princípio de mais de cem anos.
+    scenes:
+      - text: A proposta de imprimir o voto parece só uma checagem a mais. Mas ela esbarra num princípio antigo, o sigilo.
+      - text: O voto secreto não existe para esconder do eleitor. Existe para impedir que alguém prove em quem votou.
+        emphasis: [prove]
+      - text: Se dá para provar, dá para vender o voto. E dá para coagir, porque o chefe ou o traficante pode exigir o comprovante.
+      - text: A auditoria da urna é feita por outro caminho, com teste público de segurança, votação paralela e código auditado por partidos e Ministério Público.
+      - text: Dá para discutir se o método é suficiente. Mas a discussão só faz sentido conhecendo o que o sigilo protege.
+    cta: Voto secreto protege você de ser coagido.
+    caption: O sigilo do voto existe para impedir compra e coação, não para esconder do eleitor.
+    hashtags: ["#politica", "#urna", "#eleicoes", "#democracia"]

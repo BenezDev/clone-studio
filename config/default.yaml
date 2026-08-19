@@ -1,0 +1,143 @@
+# Local Clone Studio — configuração padrão.
+#
+# NÃO edite este arquivo para customizações pessoais. Ele é versionado e será
+# sobrescrito em atualizações. Crie `config/local.yaml` com apenas as chaves que
+# quiser sobrepor; o merge é recursivo e `local.yaml` tem prioridade.
+
+app:
+  name: Local Clone Studio
+  language: pt-BR
+  # Local-first: o backend nunca deve escutar fora do loopback.
+  host: 127.0.0.1
+  api_port: 8756
+  web_port: 3000
+  # Trava de segurança. Alterar para true exige consentimento explícito e ainda
+  # assim é bloqueado por core/config/schema.py salvo variável de ambiente.
+  allow_external_bind: false
+
+privacy:
+  telemetry: false
+  analytics: false
+  auto_update_check: false
+  # Nenhuma engine pode enviar mídia do usuário para fora. Downloads de PESOS
+  # de modelo (HuggingFace) são a única saída de rede permitida e acontecem
+  # apenas sob comando explícito.
+  allow_outbound_media: false
+
+hardware:
+  # auto | CPU_ONLY | LOW_VRAM | MID_VRAM | HIGH_VRAM | EXTREME
+  profile: auto
+  # Limite de threads para inferência em CPU. 0 = automático (núcleos físicos).
+  cpu_threads: 0
+  # Mantém no máximo N engines pesadas carregadas ao mesmo tempo.
+  max_resident_engines: 1
+
+tts:
+  engine: qwen3
+  # auto escolhe 0.6B em CPU_ONLY/LOW_VRAM e 1.7B acima disso.
+  model: auto
+  models:
+    high: Qwen/Qwen3-TTS-12Hz-1.7B-Base
+    low: Qwen/Qwen3-TTS-12Hz-0.6B-Base
+  language: Portuguese
+  sample_rate: 24000
+  # Número de variantes geradas no modo A/B (Generate 3).
+  ab_variants: 3
+  seed: null
+  default_speed: 1.0
+  # Reaproveita o prompt de clonagem (features da voz de referência) em disco.
+  cache_voice_prompt: true
+  max_new_tokens: 4096
+
+lipsync:
+  engine: musetalk
+  version: v15
+  fps: 25
+  batch_size: 1
+  bbox_shift: 0
+  # Preprocessamento de template é caro; sempre cachear.
+  cache_preprocessing: true
+  # Em CPU o custo por frame é alto: avisa se o job passar deste limite.
+  warn_frames_above: 900
+
+transcription:
+  # faster-whisper é o padrão em CPU (CTranslate2 int8 é ~4x mais rápido);
+  # whisperx entra quando há GPU e alinhamento por fonema é desejado.
+  engine: auto
+  models:
+    cpu: small
+    gpu: large-v3
+  language: pt
+  compute_type: auto
+  word_timestamps: true
+
+llm:
+  provider: ollama
+  base_url: http://127.0.0.1:11434
+  # auto detecta os modelos instalados e escolhe o melhor disponível.
+  model: auto
+  temperature: 0.8
+  timeout_seconds: 180
+  preferred_models:
+    - qwen3:8b
+    - llama3.1:8b
+    - gemma3:12b
+    - mistral-nemo:12b
+
+captions:
+  preset: hormozi
+  max_words_per_cue: 3
+  uppercase: false
+  # Margens seguras em fração da altura, medidas para não colidir com a UI
+  # do TikTok (barra lateral de ações e legenda do autor).
+  safe_top: 0.14
+  safe_bottom: 0.22
+  font_family: Montserrat
+  emojis: false
+
+video:
+  width: 1080
+  height: 1920
+  fps: 30
+  video_codec: libx264
+  audio_codec: aac
+  pixel_format: yuv420p
+  audio_sample_rate: 48000
+  crf: 18
+  preset: medium
+  # Loudness alvo para redes sociais (EBU R128).
+  loudness_lufs: -14.0
+  loudness_true_peak: -1.5
+
+preview:
+  width: 540
+  height: 960
+  crf: 30
+  preset: veryfast
+  # 0 = preview do vídeo inteiro.
+  max_seconds: 10
+
+editing:
+  preset: clean
+  # Reservado para a FASE 9; não afeta o render atual.
+  auto_cut: false
+  min_shot_seconds: 2.0
+  max_shot_seconds: 8.0
+  punch_in_strength: 1.08
+
+broll:
+  enabled: true
+  library_only: true
+  generative:
+    enabled: false
+    engine: wan22
+    comfyui_url: http://127.0.0.1:8188
+
+jobs:
+  max_concurrent: 1
+  keep_completed_days: 30
+
+logging:
+  level: INFO
+  # Mantém stdout/stderr completos de cada subprocesso por render.
+  keep_stage_logs: true

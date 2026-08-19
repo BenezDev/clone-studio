@@ -1,0 +1,4 @@
+# O pnpm 11 bloqueia scripts de postinstall por padrão. Só o esbuild precisa
+# instalar seu binário nativo; nenhum outro pacote recebe essa permissão.
+onlyBuiltDependencies:
+  - esbuild

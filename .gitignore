@@ -1,0 +1,66 @@
+# ===========================================================================
+# DADOS PESSOAIS — nunca versionar.
+# Esta seção vem primeiro de propósito: é a mais importante do arquivo.
+# Rosto, voz, vídeos e roteiros são identidade, não código.
+# ===========================================================================
+data/
+!data/.gitkeep
+projects/
+exports/
+cache/
+models/
+logs/
+.runtime/
+
+# Perfil de hardware é específico da máquina.
+config/hardware.json
+# Configuração pessoal (sobreposições do usuário).
+config/local.yaml
+
+# ===========================================================================
+# Ambientes e dependências
+# ===========================================================================
+.envs/
+external/
+node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.uv/
+
+# ===========================================================================
+# Build
+# ===========================================================================
+apps/web/dist/
+apps/web/.vite/
+*.tsbuildinfo
+
+# ===========================================================================
+# Ferramentas
+# ===========================================================================
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ===========================================================================
+# Sistema operacional / editores
+# ===========================================================================
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json
+.claude/
+
+# ===========================================================================
+# Temporários
+# ===========================================================================
+*.tmp
+*.part
+*.log

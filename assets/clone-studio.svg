@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!--
+    Ícone do Local Clone Studio.
+
+    Formas propositalmente grossas e poucas: o ícone precisa continuar legível
+    a 24 px no painel do Cinnamon, onde traços finos somem.
+
+    Leitura: um quadro vertical 9:16 (o formato de saída) com uma onda de voz
+    dentro — vídeo vertical falado com a sua própria voz.
+  -->
+  <defs>
+    <clipPath id="frame">
+      <rect x="88" y="40" width="80" height="150" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- fundo -->
+  <rect width="256" height="256" rx="56" fill="#141517"/>
+  <rect x="4" y="4" width="248" height="248" rx="53" fill="none"
+        stroke="#2a2d31" stroke-width="4"/>
+
+  <!-- quadro vertical 9:16 -->
+  <rect x="88" y="40" width="80" height="150" rx="12" fill="#0c0d0f"/>
+  <rect x="88" y="40" width="80" height="150" rx="12" fill="none"
+        stroke="#e0603a" stroke-width="9"/>
+
+  <!-- onda de voz -->
+  <g clip-path="url(#frame)" stroke="#e8eaed" stroke-width="9"
+     stroke-linecap="round">
+    <line x1="106" y1="102" x2="106" y2="128"/>
+    <line x1="123" y1="84"  x2="123" y2="146"/>
+    <line x1="140" y1="94"  x2="140" y2="136"/>
+    <line x1="157" y1="110" x2="157" y2="120"/>
+  </g>
+
+  <!-- base: indica render/exportação -->
+  <rect x="100" y="206" width="56" height="10" rx="5" fill="#3a3e44"/>
+</svg>

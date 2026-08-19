@@ -1,0 +1,13 @@
+# Ambiente de transcrição (.envs/whisper) — Python 3.11/3.12
+#
+# faster-whisper usa CTranslate2, que roda quantizado em int8 na CPU e não
+# depende de torch. Em CPU_ONLY isso é várias vezes mais rápido que o
+# openai-whisper original e ocupa uma fração da RAM.
+#
+# WhisperX (alinhamento por fonema) exige torch + pyannote e só é instalado
+# sob demanda — ver requirements/whisperx.txt.
+
+faster-whisper==1.2.1
+ctranslate2==4.8.1
+av==18.0.0
+onnxruntime==1.24.1

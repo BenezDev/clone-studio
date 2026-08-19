@@ -1,0 +1,230 @@
+# Notícias políticas — MODELOS, não roteiros fechados.
+#
+# Por que todos aqui têm lacunas {{ASSIM}}:
+#
+# Um "roteiro pronto" sobre a notícia de hoje seria inútil em dois dias, ou
+# seria invenção. Nenhum dos dois serve. O que envelhece bem é a ESTRUTURA —
+# fato, contexto, consequência — e é isso que está aqui.
+#
+# Você preenche com a informação que apurou. O sistema se recusa a gerar o
+# vídeo enquanto sobrar lacuna, justamente para não falar "{{NOME}}" em voz
+# alta no meio do vídeo.
+
+niche: noticia_politica
+version: 1
+
+scripts:
+  - id: notpol_lei_aprovada
+    title: "[Modelo] Lei aprovada — o que muda para você"
+    template: true
+    preset: noticia
+    emotion: neutral
+    speed: 1.05
+    tags: [lei, congresso, modelo]
+    hook: Aprovaram {{NOME_DA_LEI}}. Vou direto ao que muda no seu bolso.
+    scenes:
+      - text: Aprovaram {{NOME_DA_LEI}}. Deixa eu ir direto ao que muda para você.
+      - text: O que a lei faz, em uma frase. {{O_QUE_A_LEI_FAZ}}.
+      - text: Quem é afetado. {{QUEM_E_AFETADO}}. E entra em vigor {{QUANDO_ENTRA_EM_VIGOR}}.
+      - text: O argumento de quem foi a favor é {{ARGUMENTO_A_FAVOR}}. De quem foi contra é {{ARGUMENTO_CONTRA}}.
+      - text: Na prática, o efeito que dá para prever com segurança é {{EFEITO_PRATICO}}. O resto vai depender da regulamentação.
+    cta: Fonte na descrição. Confira antes de repassar.
+    caption: "{{NOME_DA_LEI}}: o que muda, para quem e a partir de quando."
+    hashtags: ["#politica", "#noticia", "#brasil"]
+    notes: >
+      Apresente os dois lados no penúltimo bloco mesmo que você tenha opinião.
+      Sem isso o vídeo vira panfleto e perde metade da audiência no primeiro
+      segundo. Cite a fonte oficial (Diário Oficial, portal da Câmara ou do
+      Senado) na legenda.
+    disclaimer: Preencha somente com o que você verificou em fonte primária.
+
+  - id: notpol_decisao_judicial
+    title: "[Modelo] Decisão judicial explicada"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [justica, stf, modelo]
+    hook: A decisão sobre {{TEMA}} saiu. E foi bem menos ampla do que a manchete sugere.
+    scenes:
+      - text: Saiu a decisão sobre {{TEMA}}. E ela é mais estreita do que a manchete sugere.
+      - text: O que foi decidido, exatamente. {{O_QUE_FOI_DECIDIDO}}.
+      - text: O placar foi {{PLACAR}}. E isso importa, porque decisão apertada tende a voltar.
+      - text: O que a decisão NÃO decidiu. {{O_QUE_NAO_FOI_DECIDIDO}}. Esse é o ponto que mais gera confusão.
+      - text: Vale a partir de {{VIGENCIA}}, e ainda cabe {{RECURSO_POSSIVEL}}.
+    cta: Antes de compartilhar, confira o que a decisão realmente diz.
+    caption: "Decisão sobre {{TEMA}}: alcance real, placar e o que ficou de fora."
+    hashtags: ["#justica", "#noticia", "#brasil"]
+    notes: >
+      O bloco "o que NÃO foi decidido" é o mais valioso do modelo. É onde mora
+      quase toda a desinformação sobre decisão judicial. Leia a ementa, não só
+      a notícia.
+
+  - id: notpol_imposto_muda
+    title: "[Modelo] Mudança de imposto"
+    template: true
+    preset: noticia
+    emotion: confident
+    tags: [imposto, economia, modelo]
+    hook: Mexeram em {{QUAL_IMPOSTO}}. Faz a conta comigo.
+    scenes:
+      - text: Mexeram em {{QUAL_IMPOSTO}}. Vou fazer a conta com você.
+      - text: Antes era {{COMO_ERA}}. Agora passa a ser {{COMO_FICA}}.
+      - text: Para quem ganha {{FAIXA_EXEMPLO}}, a diferença é de {{DIFERENCA_EM_REAIS}} por {{PERIODO}}.
+      - text: Quem sente primeiro é {{QUEM_SENTE_PRIMEIRO}}. E começa a valer em {{QUANDO}}.
+      - text: Um detalhe que quase ninguém comenta. {{DETALHE_IGNORADO}}.
+      - text: E imposto raramente age sozinho. O efeito final também depende de {{O_QUE_MAIS_INFLUENCIA}}, que pode ampliar ou anular essa mudança.
+      - text: Se quiser conferir no seu caso, pegue o contracheque ou a nota e refaça a conta com o seu número. Média esconde caso extremo.
+        emphasis: [média]
+    cta: Faça a sua conta com o seu número real.
+    caption: "{{QUAL_IMPOSTO}}: o que muda, com conta feita."
+    hashtags: ["#imposto", "#economia", "#brasil", "#dinheiro"]
+    notes: >
+      Número específico é o que faz esse formato render. "Vai aumentar" não
+      prende; "para quem ganha 3 mil, são 47 reais por mês" prende. Confira a
+      conta duas vezes — erro numérico aqui destrói credibilidade.
+
+  - id: notpol_votacao_apertada
+    title: "[Modelo] Votação apertada"
+    template: true
+    preset: noticia
+    emotion: confident
+    tags: [congresso, votacao, modelo]
+    hook: Passou por {{MARGEM}} votos. Um dia diferente e o resultado era outro.
+    scenes:
+      - text: "{{O_QUE_FOI_VOTADO}} passou por {{MARGEM}} votos de diferença."
+      - text: O placar final foi {{PLACAR_COMPLETO}}.
+      - text: O que virou o jogo foi {{O_QUE_DECIDIU}}.
+      - text: E teve {{NUMERO_AUSENTES}} ausências. Em votação apertada, quem não aparece decide tanto quanto quem vota.
+      - text: Agora o texto vai para {{PROXIMA_ETAPA}}, onde ainda pode mudar.
+    cta: O voto do seu deputado é público. Vale conferir.
+    caption: "{{O_QUE_FOI_VOTADO}} aprovado por {{MARGEM}} votos. Veja o placar."
+    hashtags: ["#politica", "#congresso", "#votacao"]
+    notes: >
+      Ausência é o dado mais ignorado e mais revelador. Os painéis de votação
+      da Câmara e do Senado são públicos e trazem nome a nome.
+
+  - id: notpol_dado_oficial
+    title: "[Modelo] Saiu um dado oficial"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [ibge, dados, modelo]
+    hook: O número de {{INDICADOR}} saiu. E a manchete está contando meia história.
+    scenes:
+      - text: Saiu o dado de {{INDICADOR}}, medido por {{FONTE_OFICIAL}}.
+      - text: O número é {{NUMERO}}. A variação em relação a {{PERIODO_COMPARACAO}} foi de {{VARIACAO}}.
+      - text: A manchete diz {{O_QUE_A_MANCHETE_DIZ}}. E isso está certo, mas incompleto.
+      - text: O que falta no recorte é {{O_QUE_FALTA}}. Quando você olha assim, o quadro muda.
+      - text: Uma coisa que o dado NÃO permite afirmar é {{O_QUE_O_DADO_NAO_DIZ}}.
+    cta: Fonte na descrição. Leia a metodologia.
+    caption: "{{INDICADOR}}: {{NUMERO}}. O que o número mostra e o que ele não mostra."
+    hashtags: ["#dados", "#economia", "#brasil"]
+    notes: >
+      O bloco final é obrigatório. Todo indicador tem limite de interpretação, e
+      é ali que mora a distorção. Sempre use fonte primária — IBGE, IPEA, Banco
+      Central, Tesouro.
+
+  - id: notpol_veto
+    title: "[Modelo] Veto presidencial"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [veto, executivo, modelo]
+    hook: Vetaram {{O_QUE_FOI_VETADO}}. Isso ainda não acabou.
+    scenes:
+      - text: O presidente vetou {{O_QUE_FOI_VETADO}}. E veto não é ponto final.
+      - text: A justificativa apresentada foi {{JUSTIFICATIVA}}.
+      - text: Foi veto {{TIPO_DE_VETO}}, ou seja, {{EXPLICACAO_DO_TIPO}}.
+      - text: Agora o congresso pode derrubar. Para isso precisa de maioria absoluta nas duas casas, em sessão conjunta.
+      - text: Enquanto não for apreciado, vale o veto. E o prazo para isso é {{PRAZO}}.
+    cta: Veto derrubado vira lei. Acompanhe a sessão conjunta.
+    caption: "Veto a {{O_QUE_FOI_VETADO}}: justificativa, tipo e o que vem agora."
+    hashtags: ["#politica", "#congresso", "#brasil"]
+    notes: >
+      Diferencie veto total de parcial, e veto por inconstitucionalidade de
+      veto por interesse público. São coisas distintas e a imprensa costuma
+      tratar como uma só.
+
+  - id: notpol_pesquisa_eleitoral
+    title: "[Modelo] Pesquisa eleitoral — como ler"
+    template: true
+    preset: noticia
+    emotion: confident
+    tags: [pesquisa, eleicao, modelo]
+    hook: A pesquisa saiu. Antes de comemorar ou surtar, olhe a margem.
+    scenes:
+      - text: Saiu a pesquisa de {{INSTITUTO}}, registrada sob o número {{REGISTRO_TSE}}.
+      - text: Os números são {{RESULTADOS}}.
+      - text: A margem de erro é de {{MARGEM_ERRO}} pontos. Ou seja, diferença menor que isso é empate técnico, não liderança.
+      - text: Foram {{TAMANHO_AMOSTRA}} entrevistas, feitas entre {{PERIODO}}, por {{METODO}}.
+      - text: Pesquisa é foto, não previsão. Ela mostra o momento em que foi feita, e o momento muda.
+    cta: Registro no TSE é obrigatório. Desconfie de pesquisa sem número.
+    caption: "Pesquisa {{INSTITUTO}}: números, margem de erro e como interpretar."
+    hashtags: ["#eleicoes", "#pesquisa", "#politica"]
+    notes: >
+      Empate técnico é o erro de leitura mais comum. Se a diferença cabe dentro
+      da margem, não existe liderança. Toda pesquisa eleitoral divulgada precisa
+      de registro no TSE — sem registro, não publique.
+
+  - id: notpol_reforma
+    title: "[Modelo] Reforma em discussão"
+    template: true
+    preset: educacional
+    emotion: confident
+    tags: [reforma, congresso, modelo]
+    hook: Estão discutindo a reforma de {{TEMA_DA_REFORMA}}. Em três minutos você entende.
+    scenes:
+      - text: Voltou a discussão da reforma {{TEMA_DA_REFORMA}}. Vou resumir sem economês.
+      - text: O problema que ela diz resolver é {{PROBLEMA_ALEGADO}}.
+      - text: A mudança principal proposta é {{MUDANCA_PRINCIPAL}}.
+      - text: Quem ganha com isso é {{QUEM_GANHA}}. Quem perde é {{QUEM_PERDE}}. Toda reforma tem os dois.
+      - text: E o estágio atual é {{ESTAGIO_ATUAL}}. Ou seja, ainda vai mudar bastante antes de virar texto final.
+    cta: Reforma muda muito entre a proposta e o texto final.
+    caption: "Reforma {{TEMA_DA_REFORMA}}: problema, proposta, quem ganha e quem perde."
+    hashtags: ["#politica", "#reforma", "#economia", "#brasil"]
+    notes: >
+      "Quem ganha e quem perde" é o bloco que separa análise de propaganda. Se
+      você não consegue nomear quem perde, você não entendeu a proposta ainda.
+
+  - id: notpol_checagem
+    title: "[Modelo] Checagem de boato"
+    template: true
+    preset: educacional
+    emotion: confident
+    speed: 1.0
+    tags: [checagem, desinformacao, modelo]
+    hook: Está circulando que {{O_BOATO}}. Fui verificar.
+    scenes:
+      - text: Está circulando que {{O_BOATO}}. Fui atrás.
+      - text: O que é verdade nisso. {{PARTE_VERDADEIRA}}.
+      - text: O que foi distorcido. {{PARTE_DISTORCIDA}}.
+      - text: A informação correta é {{INFORMACAO_CORRETA}}, e dá para conferir em {{FONTE}}.
+      - text: Boato bom sempre tem um pedaço de verdade. É isso que faz ele passar pelo seu filtro.
+        emphasis: [verdade, filtro]
+    cta: Antes de encaminhar, procure a fonte primária.
+    caption: "Verificação: {{O_BOATO}}. O que é verdade, o que foi distorcido."
+    hashtags: ["#checagem", "#desinformacao", "#brasil"]
+    notes: >
+      Nunca repita o boato no hook sem marcar que é boato — repetir sem
+      contexto reforça a memória da mentira. E só publique com fonte primária
+      em mãos.
+
+  - id: notpol_posse_troca
+    title: "[Modelo] Troca de ministro ou cargo"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [governo, executivo, modelo]
+    hook: Trocaram o comando de {{QUAL_PASTA}}. O que isso significa na prática.
+    scenes:
+      - text: Trocaram o comando de {{QUAL_PASTA}}. Sai {{QUEM_SAI}}, entra {{QUEM_ENTRA}}.
+      - text: O motivo declarado foi {{MOTIVO_DECLARADO}}.
+      - text: Essa pasta cuida de {{O_QUE_A_PASTA_FAZ}}, e o orçamento dela é {{ORCAMENTO}}.
+      - text: O histórico de quem assume é {{HISTORICO}}. Isso dá pista da direção.
+      - text: O que muda para você depende de {{O_QUE_DEPENDE}}. Antes disso, é especulação.
+    cta: Mudança de comando muda prioridade, não estrutura.
+    caption: "{{QUAL_PASTA}}: sai {{QUEM_SAI}}, entra {{QUEM_ENTRA}}. O que a pasta faz."
+    hashtags: ["#politica", "#governo", "#brasil"]
+    notes: >
+      Evite especular sobre motivo não declarado. O bloco final existe para
+      separar o que se sabe do que se supõe.

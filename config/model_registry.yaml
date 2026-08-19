@@ -1,0 +1,207 @@
+# Registro de modelos, pesos e licenças.
+#
+# Regra do projeto: nenhuma licença é assumida silenciosamente. Cada entrada
+# registra a fonte oficial, a versão fixada e o que a licença permite.
+#
+# commercial_allowed:
+#   true                  -> uso comercial liberado pela licença do próprio peso
+#   false                 -> proibido comercialmente
+#   check_model_license   -> depende do peso específico; exige verificação manual
+#                            antes de aparecer como recomendado em Commercial Mode
+#
+# `verified_at` é a data em que a licença foi conferida na fonte oficial.
+
+version: 1
+
+models:
+  qwen3_tts_1_7b_base:
+    display_name: Qwen3-TTS 12Hz 1.7B Base
+    purpose: voice_cloning
+    engine: qwen3
+    repo: Qwen/Qwen3-TTS-12Hz-1.7B-Base
+    source: https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base
+    upstream_code: https://github.com/QwenLM/Qwen3-TTS
+    package: qwen-tts==0.1.1
+    revision: main
+    license: Apache-2.0
+    license_url: https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base
+    commercial_allowed: true
+    verified_at: 2026-08-11
+    size_gb: 4.6
+    files_note: inclui speech_tokenizer/ (0.68 GB) no mesmo repositório
+    env: qwen-tts
+    requires:
+      min_ram_gb: 12
+      min_vram_gb: 0        # roda em CPU
+      recommended_vram_gb: 8
+    notes: >
+      Clonagem zero-shot a partir de ~3s de áudio de referência. Suporta
+      Português nativamente. Em CPU_ONLY a geração fica em torno de 3-6x o
+      tempo real; prefira o 0.6B nesse caso.
+
+  qwen3_tts_0_6b_base:
+    display_name: Qwen3-TTS 12Hz 0.6B Base
+    purpose: voice_cloning
+    engine: qwen3
+    repo: Qwen/Qwen3-TTS-12Hz-0.6B-Base
+    source: https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-Base
+    upstream_code: https://github.com/QwenLM/Qwen3-TTS
+    package: qwen-tts==0.1.1
+    revision: main
+    license: Apache-2.0
+    license_url: https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-Base
+    commercial_allowed: true
+    verified_at: 2026-08-11
+    size_gb: 2.6
+    env: qwen-tts
+    requires:
+      min_ram_gb: 8
+      min_vram_gb: 0
+      recommended_vram_gb: 4
+    notes: Perfil Low VRAM / CPU. Qualidade um pouco abaixo do 1.7B.
+
+  musetalk_15:
+    display_name: MuseTalk 1.5
+    purpose: lipsync
+    engine: musetalk
+    repo: TMElyralab/MuseTalk
+    source: https://huggingface.co/TMElyralab/MuseTalk
+    upstream_code: https://github.com/TMElyralab/MuseTalk
+    # Commit fixado para reprodutibilidade — o upstream muda a API sem aviso.
+    code_revision: 0a89dec45a0192b824e3cf4daf96c239440c5ed8
+    revision: main
+    license: MIT
+    license_url: https://github.com/TMElyralab/MuseTalk/blob/main/LICENSE
+    commercial_allowed: true
+    verified_at: 2026-08-11
+    size_gb: 4.2
+    env: musetalk
+    # Os pesos vêm de cinco repositórios diferentes. Baixamos só o que a v1.5
+    # usa em inferência: o unet v1.0 (3,4 GB) e o syncnet (treino) ficam de fora.
+    components:
+      - repo: TMElyralab/MuseTalk
+        dest: musetalkV15
+        include: ["musetalkV15/musetalk.json", "musetalkV15/unet.pth"]
+        strip_prefix: musetalkV15
+        size_gb: 3.4
+      - repo: stabilityai/sd-vae-ft-mse
+        dest: sd-vae
+        include: ["config.json", "diffusion_pytorch_model.bin"]
+        size_gb: 0.34
+      - repo: openai/whisper-tiny
+        dest: whisper
+        include: ["config.json", "pytorch_model.bin", "preprocessor_config.json"]
+        size_gb: 0.16
+      - repo: yzd-v/DWPose
+        dest: dwpose
+        include: ["dw-ll_ucoco_384.pth"]
+        size_gb: 0.2
+      # Espelho no HuggingFace do peso que o script oficial baixa do Google
+      # Drive via gdown. Mesmo arquivo, sem depender de link do Drive.
+      - repo: ManyOtherFunctions/face-parse-bisent
+        dest: face-parse-bisent
+        include: ["79999_iter.pth", "resnet18-5c106cde.pth"]
+        size_gb: 0.1
+    # Pesos que o código do MuseTalk baixa por URL em tempo de execução.
+    # Sem pré-baixá-los, o primeiro lip-sync exigiria internet e gravaria em
+    # ~/.cache/torch — quebrando tanto a promessa de operação offline quanto a
+    # regra de manter tudo dentro do projeto.
+    url_components:
+      - url: https://www.adrianbulat.com/downloads/python-fan/s3fd-619a316812.pth
+        dest: _torch/hub/checkpoints
+        filename: s3fd-619a316812.pth
+        size_gb: 0.09
+        license: BSD-3-Clause
+        note: >
+          Detector de rosto S3FD (face-alignment, Adrian Bulat). Baixado via
+          torch.hub pelo módulo face_detection do MuseTalk.
+    requires:
+      min_ram_gb: 10
+      min_vram_gb: 0
+      recommended_vram_gb: 8
+      python: "3.10"
+    dependencies:
+      # Pesos de terceiros que o MuseTalk baixa. Licenças distintas do MIT do
+      # código — declaradas explicitamente porque impactam uso comercial.
+      - name: sd-vae-ft-mse
+        source: https://huggingface.co/stabilityai/sd-vae-ft-mse
+        license: MIT
+        commercial_allowed: true
+      - name: whisper-tiny
+        source: https://huggingface.co/openai/whisper-tiny
+        license: MIT
+        commercial_allowed: true
+      - name: dwpose (rtmpose wholebody)
+        source: https://huggingface.co/yzd-v/DWPose
+        license: Apache-2.0
+        commercial_allowed: check_model_license
+        note: >
+          Os checkpoints DWPose herdam restrições dos datasets de treino
+          (COCO-WholeBody / UBody). Verifique antes de uso comercial.
+      - name: face-parse-bisent (resnet18)
+        source: https://download.pytorch.org/models/resnet18-5c106cde.pth
+        license: BSD-3-Clause
+        commercial_allowed: true
+    notes: >
+      O README oficial declara: código sob MIT, modelo treinado disponível para
+      qualquer finalidade incluindo comercial. Os dados de teste do repositório
+      são apenas para pesquisa não-comercial e NÃO são usados por este projeto.
+      Requer Python 3.10 + torch 2.0.1 + mmcv 2.0.1 (stack MMLab).
+
+  faster_whisper_small:
+    display_name: faster-whisper small (CTranslate2)
+    purpose: transcription
+    engine: faster-whisper
+    repo: Systran/faster-whisper-small
+    source: https://huggingface.co/Systran/faster-whisper-small
+    upstream_code: https://github.com/SYSTRAN/faster-whisper
+    revision: main
+    license: MIT
+    commercial_allowed: true
+    verified_at: 2026-08-11
+    size_gb: 0.5
+    env: whisper
+    requires:
+      min_ram_gb: 4
+      min_vram_gb: 0
+    notes: Padrão em CPU. int8 com AVX2 roda bem acima do tempo real.
+
+  faster_whisper_large_v3:
+    display_name: faster-whisper large-v3
+    purpose: transcription
+    engine: faster-whisper
+    repo: Systran/faster-whisper-large-v3
+    source: https://huggingface.co/Systran/faster-whisper-large-v3
+    revision: main
+    license: MIT
+    commercial_allowed: true
+    verified_at: 2026-08-11
+    size_gb: 3.1
+    env: whisper
+    requires:
+      min_ram_gb: 12
+      min_vram_gb: 6
+    notes: Recomendado apenas com GPU.
+
+  wan22_ti2v_5b:
+    display_name: Wan2.2 TI2V 5B
+    purpose: generative_video
+    engine: wan22
+    repo: Wan-AI/Wan2.2-TI2V-5B
+    source: https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B
+    upstream_code: https://github.com/Wan-Video/Wan2.2
+    revision: main
+    license: Apache-2.0
+    commercial_allowed: check_model_license
+    verified_at: 2026-08-11
+    size_gb: 18.0
+    env: comfyui
+    optional: true
+    requires:
+      min_ram_gb: 32
+      min_vram_gb: 12
+      recommended_vram_gb: 24
+    notes: >
+      OPT-IN. Não é instalado pelo installer padrão. Requer GPU dedicada com
+      VRAM significativa; em CPU_ONLY fica indisponível. Confirme os termos do
+      peso específico antes de uso comercial.

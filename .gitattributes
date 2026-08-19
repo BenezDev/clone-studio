@@ -1,0 +1,42 @@
+# Normaliza o texto no repositório: LF sempre no que é versionado.
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Windows precisa de CRLF de verdade.
+#
+# Um .bat com LF quebra `goto`, labels e `set /p` — o interpretador de lote do
+# Windows lê o \n sozinho como parte do rótulo. O PowerShell tolera LF, mas os
+# arquivos deste projeto são gravados em UTF-8 com BOM para o Windows PowerShell
+# 5.1 ler acentuação corretamente; manter CRLF junto evita diff sujo em quem
+# edita no Windows.
+# ---------------------------------------------------------------------------
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+
+# Scripts POSIX nunca podem receber CRLF: o shebang para de funcionar.
+*.sh    text eol=lf
+
+# ---------------------------------------------------------------------------
+# Binários — sem conversão, sem diff textual.
+# ---------------------------------------------------------------------------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.mp4   binary
+*.mov   binary
+*.wav   binary
+*.mp3   binary
+*.flac  binary
+*.pt    binary
+*.pth   binary
+*.bin   binary
+*.onnx  binary
+*.safetensors binary
+
+# Lockfiles: versionados, mas fora do diff e das estatísticas de linguagem.
+pnpm-lock.yaml -diff linguist-generated=true

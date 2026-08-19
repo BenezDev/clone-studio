@@ -1,0 +1,190 @@
+# Notícias técnicas — mistura de perenes e modelos.
+#
+# Perene: o mecanismo por trás da notícia (como um vazamento acontece, por que
+# um modelo "alucina"). Isso não envelhece e é o que dá autoridade.
+# Modelo: o fato datado. Você preenche.
+
+niche: noticia_tecnica
+version: 1
+
+scripts:
+  - id: tec_lancamento_modelo
+    title: "[Modelo] Lançaram um modelo de IA novo"
+    template: true
+    preset: tech
+    emotion: confident
+    speed: 1.05
+    tags: [ia, lancamento, modelo]
+    hook: "Lançaram o {{NOME_DO_MODELO}}. O que muda de verdade e o que é marketing."
+    scenes:
+      - text: "Saiu o {{NOME_DO_MODELO}}, da {{EMPRESA}}. Vou separar o que muda do que é marketing."
+      - text: "A alegação principal é {{ALEGACAO_PRINCIPAL}}."
+      - text: "O número que sustenta isso é {{BENCHMARK}}. E benchmark é bom, mas mede o que ele mede, não o seu caso de uso."
+        emphasis: [benchmark]
+      - text: "O que realmente muda no dia a dia é {{MUDANCA_PRATICA}}."
+      - text: "E a parte que ninguém coloca no anúncio. {{LIMITACAO}}."
+    cta: Teste no seu caso antes de trocar de ferramenta.
+    caption: "{{NOME_DO_MODELO}}: o que muda na prática e o que é só benchmark."
+    hashtags: ["#ia", "#tecnologia", "#programacao"]
+    notes: >
+      O bloco de limitação é o que separa análise de release de imprensa. Se
+      você não achou nenhuma limitação, você leu só o anúncio.
+
+  - id: tec_vazamento_dados
+    title: "[Modelo] Vazamento de dados"
+    template: true
+    preset: noticia
+    emotion: confident
+    tags: [seguranca, vazamento, modelo]
+    hook: "Vazaram dados de {{QUANTAS_PESSOAS}} pessoas. Veja se você está na lista."
+    scenes:
+      - text: "Vazamento em {{EMPRESA_AFETADA}}, atingindo cerca de {{QUANTAS_PESSOAS}} pessoas."
+      - text: "O que vazou. {{DADOS_VAZADOS}}."
+      - text: "Isso importa porque {{POR_QUE_IMPORTA}}. Dado vazado não expira, ele circula por anos."
+        emphasis: [anos]
+      - text: "O que fazer agora. Troque a senha desse serviço e de qualquer lugar onde você repetiu ela. Ative a verificação em duas etapas."
+      - text: "E desconfie de ligação ou mensagem citando seus dados. É assim que o vazamento vira golpe."
+    cta: Ative verificação em duas etapas hoje.
+    caption: "Vazamento em {{EMPRESA_AFETADA}}: o que vazou e o que fazer."
+    hashtags: ["#seguranca", "#privacidade", "#tecnologia"]
+
+  - id: tec_por_que_ia_erra
+    title: Por que a IA inventa resposta com tanta confiança
+    preset: tech
+    emotion: confident
+    tags: [ia, alucinacao, perene]
+    hook: A IA não mente. Ela também não sabe que está errada. É pior.
+    scenes:
+      - text: A IA não mente para você. Mentir exige saber a verdade. O problema é outro, e é pior.
+      - text: Um modelo de linguagem prevê a próxima palavra mais provável. Ele otimiza para texto plausível, não para texto verdadeiro.
+        emphasis: [plausível, verdadeiro]
+      - text: Na maior parte dos casos plausível e verdadeiro coincidem. Quando não coincidem, sai uma resposta com a mesma cara de confiança.
+      - text: Por isso ele inventa citação, número e link. Todos têm o formato certo. Só não existem.
+      - text: A regra prática é simples. Use IA para o que você consegue verificar, não para o que você quer acreditar.
+    cta: Sempre confira número, citação e link.
+    caption: Modelo de linguagem otimiza para plausível, não para verdadeiro. Daí a alucinação.
+    hashtags: ["#ia", "#tecnologia", "#programacao"]
+
+  - id: tec_fim_de_suporte
+    title: "[Modelo] Fim de suporte"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [suporte, modelo]
+    hook: "{{PRODUTO}} acabou de perder o suporte. Isso é um problema de segurança."
+    scenes:
+      - text: "A {{EMPRESA}} encerrou o suporte de {{PRODUTO}} em {{DATA}}."
+      - text: "Fim de suporte não significa que parou de funcionar. Significa que parou de receber correção de falha de segurança."
+        emphasis: [segurança]
+      - text: "Quem usa hoje fica exposto a {{RISCO}}."
+      - text: "As opções são {{OPCOES}}."
+      - text: "Se você não pode migrar agora, o mínimo é {{MITIGACAO_MINIMA}}."
+    cta: Fim de suporte é prazo de validade de segurança.
+    caption: "{{PRODUTO}} sem suporte desde {{DATA}}. Risco e opções."
+    hashtags: ["#tecnologia", "#seguranca", "#ti"]
+
+  - id: tec_golpe_novo
+    title: "[Modelo] Golpe novo circulando"
+    template: true
+    preset: noticia
+    emotion: confident
+    tags: [golpe, seguranca, modelo]
+    hook: "Tem um golpe novo usando {{ISCA}}. Ele funciona por um motivo específico."
+    scenes:
+      - text: "Está circulando um golpe que usa {{ISCA}}."
+      - text: "Como funciona. {{COMO_FUNCIONA}}."
+      - text: "Ele engana porque {{POR_QUE_ENGANA}}. Golpe bom não parece golpe, parece rotina."
+        emphasis: [rotina]
+      - text: "O sinal que entrega é {{SINAL_DE_ALERTA}}."
+      - text: "E vale avisar quem está mais exposto a esse tipo de abordagem. Golpe se espalha por quem não conhece o formato, não por quem é ingênuo."
+        emphasis: [formato]
+      - text: "Se você caiu, faça isto. {{O_QUE_FAZER}}."
+    cta: Avise quem é mais vulnerável a esse tipo de golpe.
+    caption: "Golpe com {{ISCA}}: como funciona e o sinal que entrega."
+    hashtags: ["#golpe", "#seguranca", "#tecnologia"]
+
+  - id: tec_senha_vs_2fa
+    title: Por que sua senha forte não basta
+    preset: tech
+    emotion: confident
+    tags: [seguranca, senha, perene]
+    hook: Senha de vinte caracteres não te protege do ataque mais comum.
+    scenes:
+      - text: Senha de vinte caracteres com símbolo não te protege do ataque mais comum. Porque o ataque mais comum não tenta adivinhar.
+        emphasis: [adivinhar]
+      - text: O que acontece de verdade é vazamento. Um site guarda sua senha, o site é invadido, e a senha vai para uma lista.
+      - text: Aí testam essa mesma combinação em banco, e-mail e rede social. Chama credential stuffing, e funciona porque as pessoas repetem senha.
+      - text: Por isso duas coisas valem mais que complexidade. Senha diferente em cada lugar, e verificação em duas etapas.
+      - text: Com o segundo fator ativo, a senha vazada sozinha não abre nada.
+    cta: Ative a verificação em duas etapas no seu e-mail primeiro.
+    caption: O ataque comum não adivinha senha, ele reusa senha vazada. Por isso 2FA importa mais.
+    hashtags: ["#seguranca", "#senha", "#tecnologia"]
+
+  - id: tec_regulamentacao_ia
+    title: "[Modelo] Nova regra para IA"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [ia, regulacao, modelo]
+    hook: "Aprovaram uma regra para IA em {{ONDE}}. O que ela obriga de fato."
+    scenes:
+      - text: "Saiu regulamentação de inteligência artificial em {{ONDE}}, valendo a partir de {{QUANDO}}."
+      - text: "O que ela obriga. {{O_QUE_OBRIGA}}."
+      - text: "Quem precisa cumprir. {{QUEM_CUMPRE}}. Isso inclui quem só usa, não só quem desenvolve."
+      - text: "A penalidade prevista é {{PENALIDADE}}."
+      - text: "E o ponto em aberto é {{PONTO_EM_ABERTO}}, que só a prática vai resolver."
+    cta: Se você usa IA em produto, vale ler o texto original.
+    caption: "Regra de IA em {{ONDE}}: o que obriga, quem cumpre, qual a penalidade."
+    hashtags: ["#ia", "#regulacao", "#tecnologia"]
+
+  - id: tec_open_source_gratis
+    title: Código aberto não é a mesma coisa que grátis
+    preset: tech
+    emotion: confident
+    tags: [licenca, opensource, perene]
+    hook: Você baixou de graça. Isso não quer dizer que pode usar comercialmente.
+    scenes:
+      - text: Você baixou de graça e o código está lá para ler. Isso não significa que você pode usar no seu produto.
+      - text: Aberto é sobre acesso ao código. Livre é sobre o que a licença permite. São eixos diferentes.
+        emphasis: [acesso, permite]
+      - text: MIT e Apache liberam uso comercial. GPL libera, mas obriga a abrir o que você derivar dela.
+      - text: E existem licenças que chamam de abertas mas proíbem uso comercial, ou limitam por tamanho de empresa.
+      - text: Em modelo de IA isso é ainda mais confuso, porque o código, os pesos e os dados de treino podem ter licenças diferentes entre si.
+    cta: Antes de usar em produto, abra o arquivo de licença.
+    caption: Aberto é acesso ao código. Livre é o que a licença permite. Não são a mesma coisa.
+    hashtags: ["#opensource", "#licenca", "#programacao"]
+
+  - id: tec_aquisicao
+    title: "[Modelo] Empresa comprou empresa"
+    template: true
+    preset: noticia
+    emotion: neutral
+    tags: [mercado, aquisicao, modelo]
+    hook: "A {{COMPRADORA}} comprou a {{COMPRADA}}. Se você usa, isso te afeta."
+    scenes:
+      - text: "A {{COMPRADORA}} comprou a {{COMPRADA}} por {{VALOR}}."
+      - text: "A {{COMPRADA}} fazia {{O_QUE_FAZIA}}, e tinha cerca de {{BASE_DE_USUARIOS}} usuários."
+      - text: "O padrão histórico nesse tipo de aquisição é {{PADRAO_HISTORICO}}. Não é regra, é tendência."
+      - text: "Se você usa o produto, o que dá para fazer agora é exportar seus dados. Antes que mude a política."
+        emphasis: [exportar]
+      - text: "E acompanhar {{O_QUE_ACOMPANHAR}} nos próximos meses."
+    cta: Exporte seus dados enquanto a exportação existe.
+    caption: "{{COMPRADORA}} compra {{COMPRADA}}: o que muda para quem usa."
+    hashtags: ["#tecnologia", "#mercado", "#startup"]
+
+  - id: tec_backup_regra
+    title: A regra de backup que quase ninguém segue
+    preset: tech
+    emotion: confident
+    tags: [backup, perene]
+    hook: Você tem backup. Provavelmente ele não te salva.
+    scenes:
+      - text: Você tem backup. E provavelmente ele não te salva, porque backup só conta quando restaura.
+        emphasis: [restaura]
+      - text: A regra clássica é três, dois, um. Três cópias dos dados, em dois tipos de mídia diferentes, com uma fora do local.
+      - text: A cópia fora do local é a que resolve incêndio, roubo e ransomware. Se o backup está no mesmo computador, ele morre junto.
+      - text: E tem o passo que quase ninguém faz. Testar a restauração. Backup nunca testado é fé, não é backup.
+      - text: Marque uma data no ano para restaurar um arquivo aleatório e conferir se abre.
+    cta: Escolha um arquivo e tente restaurar hoje.
+    caption: Três cópias, dois tipos de mídia, uma fora do local. E teste a restauração.
+    hashtags: ["#backup", "#tecnologia", "#ti"]
